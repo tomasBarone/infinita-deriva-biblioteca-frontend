@@ -129,10 +129,7 @@ function Navbar({ onToggleMenu }) {
                                         <Link to="/salas/sede" onClick={() => setMenuAbierto(null)}>Horarios y Ubicación de Sede</Link>
                                     </div>
                                 </div>
-                                <div className="drawer-side-col">
-                                    <h4>Atención Presencial</h4>
-                                    <p>Lunes a Viernes de 09:00 a 19:00 hs. Acceso libre con Ficha de Socio activa.</p>
-                                </div>
+                               
                             </div>
                         )}
 
@@ -147,10 +144,7 @@ function Navbar({ onToggleMenu }) {
                                         <Link to="/pase-lector/manuscritos" onClick={() => setMenuAbierto(null)}>Acceso a Fondos y Manuscritos Raros</Link>
                                     </div>
                                 </div>
-                                <div className="drawer-side-col">
-                                    <h4>Membresía</h4>
-                                    <p>Gestiona tu legajo de lector y consulta tus ejemplares en posesión desde tu perfil.</p>
-                                </div>
+                                
                             </div>
                         )}
                     </div>

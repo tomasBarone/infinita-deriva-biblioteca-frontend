@@ -13,7 +13,7 @@ function Hero({ onOpenSearch }) {
         
         {/* BADGE */}
         <div className="reveal-wrapper">
-          <span className="hero-badge reveal-item delay-1">
+          <span className="hero-badge reveal-item delay-1" >
             Desde 2026 · San Isidro, Buenos Aires
           </span>
         </div>

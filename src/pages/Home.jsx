@@ -25,7 +25,7 @@ import sede from '../assets/Salas/sedeSanIsidro.jpg';
 // bloque 1: Servicios principales 
   const serviciosPrincipales = [
     {
-      titulo: 'SALAS & SEDE SAN ISIDRO',
+      titulo: 'SALAS GENERALES DE LECTURA',
       descripcion: 'Consulta las instalaciones de la Sede, horarios de atención presencial y las salas generales de estudio.',
       link: 'salas/generales',
       imagen: fotoGeneral,
