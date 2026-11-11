@@ -1,26 +1,23 @@
-.sala-general-page{
+.sala-general-page {
     background-color: #fcfaf2;
     color: #2c1810;
     width: 100%;
     min-height: 100vh;
-
 }
 
-
-.sala-content-container{
+.sala-content-container {
     position: relative;
-    margin-top: 0; /*eleva la tarjeta sobre la foto parallax*/
+    margin-top: 0;
     box-sizing: border-box;
     width: 100%;
     z-index: 10;
- 
-
 }
 
-.infinita-deriva-fullwidth-card {
+.infinita-deriva-fullwidth-card-general {
+
   width: 100%;
   background-color: #f0f2f5; 
-  padding: 80px 10%;
+  padding: 90px 10%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -28,29 +25,40 @@
   text-align: center;
 }
 
-
-.infinita-deriva-heading {
-font-family: system-ui, -apple-system, sans-serif;
-  font-size: 1.05rem;
+.infinita-deriva-heading-general {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
   color: #2c1810;
-  margin: 0 0 50px 0;
+  margin: 0 0 35px 0;
 }
 
-.infinita-deriva-frame-box{
-position: relative;
+.infinita-deriva-subheading-general {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #2c1810;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.infinita-deriva-frame-box-general {
+  position: relative;
+  width: 100%;
   max-width: 850px;
-  background-color: #ffffff;
-  padding: 45px 50px;
+  background-color: #f0f2f5; 
+  padding: 25px 35px;
   box-sizing: border-box;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  text-align: left;
 }
 
 
-.infinita-deriva-frame-box::after{
-    content: '';
+.infinita-deriva-frame-box::after {
+  content: '';
   position: absolute;
   bottom: -12px;
   right: -12px;
@@ -60,8 +68,8 @@ position: relative;
   border-right: 3px solid #ffffff;
 }
 
-.infinita-deriva-frame-box::before{
-content: '';
+.infinita-deriva-frame-box::before {
+  content: '';
   position: absolute;
   top: -12px;
   left: -12px;
@@ -69,30 +77,19 @@ content: '';
   height: 70px;
   border-top: 3px solid #ffffff;
   border-left: 3px solid #ffffff;
-
 }
 
-
-
-.infinita-deriva-description{
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.7;
+.infinita-deriva-description-general {
+  font-family: "IBM Plex Serif", serif;
+  font-weight: 400;
+  font-style:italic;
+  font-size: 1.09rem;
+  line-height: 1.6; 
   color: #4a4a4a;
   margin: 0;
   text-align: justify;
-}
-
-/* Caja de detalles*/
-
-.sala-details-box {
-background-color: #fcfaf2;
-  padding: 80px 10%;
-  max-width: 900px;
-  margin: 0 auto;
 
 }
-
 
 .btn-institutional {
   display: inline-block;
@@ -111,5 +108,3 @@ background-color: #fcfaf2;
 .btn-institutional:hover {
   background-color: #8b0000;
 }
-
-

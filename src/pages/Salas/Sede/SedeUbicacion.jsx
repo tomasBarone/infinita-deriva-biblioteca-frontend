@@ -13,19 +13,18 @@ function SedeUbicacion(){
           {/* banner parallax */}
           <SeccionImagenParallax
              imagenUrl={fotoSede}
-             subtitulo="Institucional"
-             titulo="SEDE SAN ISIDRO"
+          
              fullHeight={true}
           />
            
            {/* contenido principal  */}
           <section className="sede-content-container">
-             <div className="infinita-deriva-fullwidth-card">
-                <h2 className="infinita-deriva-heading">INFORMACIÓN PRÁCTICA & SEDE</h2>
+             <div className="infinita-deriva-fullwidth-card-general">
+                <h2 className="infinita-deriva-heading-general">INFORMACIÓN PRÁCTICA & SEDE</h2>
 
-                <div className="infinita-deriva-frame-box"> 
-                    <h3 className="sede-subheading">Horarios de Atención Presencial</h3>
-                    <p className="infinita-deriva-description" style={{ textAlign: 'center' }}>
+                <div className="infinita-deriva-frame-box-general"> 
+                    <h3 className="infinita-deriva-subheading-general">Horarios de Atención Presencial</h3>
+                    <p className="infinita-deriva-description-general" style={{ textAlign: 'center' }}>
                         <strong>Lunes a Viernes:</strong> 09:00 a 19:00 hs.<br />
                         <strong>Sábados:</strong> 10:00 a 14:00 hs (exclusivo para consulta en sala con reserva previa).
                     </p>
@@ -39,17 +38,13 @@ function SedeUbicacion(){
             <SeccionImagenParallax imagenUrl={view}/>
            
             {/* bloque secundario */}
-            <div className="sede-secondary-section">
-             <div className="sede-info-box">
-                <h4 className="sede-subheading">Orientación en Sala y Archivo</h4>
-                <p className="infinita-deriva-description" style={{ textAlign: 'center' }}>
+            <div className="infinita-deriva-fullwidth-card-general">
+             <div className="infinita-deriva-frame-box-general">
+                <h4 className="infinita-deriva-subheading-general">Orientación en Sala y Archivo</h4>
+                <p className="infinita-deriva-description-general" style={{ textAlign: 'center' }}>
                     Para acceder a los fondos de reserva especial o ubicar ejemplares en las estanterías de libre acceso, solicite la guía impresa o asistencia en el mostrador principal de recepción.
                 </p>
-                <div className="sede-action-wrapper">
-                    <Link to="/salas/generales" className="btn-institutional">
-                    ← VOLVER A SALAS DE LECTURA
-                    </Link>
-                </div>
+                
              </div>
             </div>
 
