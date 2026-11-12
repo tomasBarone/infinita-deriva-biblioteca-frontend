@@ -35,7 +35,7 @@ const VistaCorriente = () => {
         };
 
         cargarDatosPantalla();
-    }, [id]); // Si el usuario salta de Barroco a Ilustración, el ID cambia y el useEffect se vuelve a ejecutar
+    }, [id]); 
 
     if (cargando) {
         return <div style={{ padding: '40px', textAlign: 'center', background: '#fcfaf2', minHeight: '100vh' }}>Cargando catálogo...</div>;
