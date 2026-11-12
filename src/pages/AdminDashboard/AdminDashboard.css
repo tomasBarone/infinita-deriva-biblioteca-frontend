@@ -1,258 +1,364 @@
-/* ==========================================================================
-   PANEL DE CONTROL - LIBRERÍA SHÁMATA (ESTILO EDITORIAL)
-   ========================================================================== */
-
-.admin-dashboard-wrapper {
-    background-color: #fbf9f5;
-    min-height: 100vh;
-    padding: 40px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #2c1810;
+.panel-admin-container {
+  background-color: #fcfaf2;
+  min-height: 100vh;
+  font-family: "Playfair Display", Georgia, serif;
+  color: #1a1917;
+  margin: 0;
+  padding-bottom: 80px;
 }
 
-/* Header */
-.admin-dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+/* 1. CABECERA INSTITUCIONAL */
+.panel-admin-hero {
+  background-color: #0f0e0c;
+  color: #fcfaf2;
+  padding: 60px 8%;
+  border-bottom: 2px solid #2c1810;
 }
 
-.admin-dashboard-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #1a1715;
-    margin: 0;
+.panel-admin-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.admin-dashboard-subtitle {
-    color: #6b625b;
-    margin: 5px 0 0 0;
-    font-size: 0.95rem;
+.panel-admin-eyebrow {
+  color: #a8a297;
+  font-size: 0.75rem;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: system-ui, sans-serif;
 }
 
-/* Botón Principal */
-.btn-primary-admin {
-    background-color: #2c1810;
-    color: #fbf9f5;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+.panel-admin-title {
+  font-size: 3rem;
+  font-weight: 400;
+  margin: 0;
+  font-family: serif;
+  letter-spacing: 0.5px;
 }
 
-.btn-primary-admin:hover {
-    background-color: #4a2e22;
+.btn-registrar-obra {
+  background-color: #5c3a21;
+  color: #fcfaf2;
+  border: 1px solid #7a4f30;
+  padding: 12px 24px;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  transition: background 0.2s ease;
 }
 
-.btn-primary-admin:active {
-    transform: scale(0.98);
+.btn-registrar-obra:hover {
+  background-color: #442a18;
 }
 
-/* Tarjeta de Filtro */
-.admin-filter-card {
-    background-color: #ffffff;
-    border: 1px solid #e8e2d5;
-    padding: 18px 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+/* 2. CONTENEDOR Y FILTROS */
+.panel-admin-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 50px 5%;
 }
 
-.filter-label {
-    font-size: 0.9rem;
-    color: #2c1810;
-    font-weight: 600;
+.panel-admin-filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5dec9;
+  font-family: system-ui, sans-serif;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.filter-select {
-    background-color: #fbf9f5;
-    color: #2c1810;
-    border: 1px solid #dcd5c7;
-    padding: 8px 14px;
-    border-radius: 6px;
-    outline: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: border-color 0.2s ease;
+.panel-admin-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.filter-select:focus {
-    border-color: #2c1810;
+.panel-admin-filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #70695d;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
-/* Contenedor de Tabla */
-.admin-table-container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    border: 1px solid #e8e2d5;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
+.panel-admin-select {
+  padding: 8px 14px;
+  border-radius: 2px;
+  border: 1px solid #d4cebd;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+  color: #1a1917;
+  outline: none;
+  font-family: system-ui, sans-serif;
 }
 
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+.panel-admin-counter {
+  font-size: 0.8rem;
+  color: #70695d;
+  font-style: italic;
+  font-family: serif;
 }
 
-.admin-table th {
-    background-color: #f7f3eb;
-    border-bottom: 2px solid #e8e2d5;
-    color: #5c524a;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    padding: 16px;
+/* 3. FICHERO DE OBRAS (ESTILO TARJETAS HORIZONTALES) */
+.fichero-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.admin-table td {
-    padding: 16px;
-    border-bottom: 1px solid #f0eae1;
-    font-size: 0.95rem;
-    vertical-align: middle;
+.fichero-card {
+  background-color: #f5f0e6;
+  border: 1px solid #e2ded7;
+  border-left: 4px solid #2c1810;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.admin-table tr:last-child td {
-    border-bottom: none;
+.fichero-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  border-color: #d4cebd;
 }
 
-/* Estilos de Celdas */
-.cell-id {
-    color: #8c827a;
-    font-family: monospace;
+.fichero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
 }
 
-.cell-titulo {
-    font-weight: 600;
-    color: #1a1715;
+.fichero-meta-top {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  font-family: system-ui, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: #70695d;
+  text-transform: uppercase;
 }
 
-.cell-autor {
-    color: #4a423d;
+.fichero-titulo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1917;
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
 }
 
-.cell-precio {
-    font-weight: 700;
-    color: #2b5329; /* Verde bosque noble */
-    font-family: monospace, system-ui;
-    font-size: 1rem;
+.fichero-autor {
+  font-size: 0.95rem;
+  color: #544f46;
+  font-style: italic;
+  margin: 0;
 }
 
-/* Badges */
-.badge-corriente {
-    background-color: #2c1810;
-    color: #fbf9f5;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    display: inline-block;
+.fichero-badge {
+  background-color: #efebe0;
+  color: #2c1810;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid #d4cebd;
+  font-size: 0.65rem;
 }
 
-/* Botones de Acción */
-.actions-cell-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+/* ACCIONES DEL FICHERO */
+.fichero-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  font-family: system-ui, sans-serif;
 }
 
-.btn-action-delete {
-    background-color: #fff2f2;
-    color: #a94442;
-    border: 1px solid #f2dede;
-    padding: 7px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+.btn-fichero {
+  background: none;
+  border: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: opacity 0.2s;
 }
 
-.btn-action-delete:hover {
-    background-color: #a94442;
-    color: #ffffff;
-    border-color: #a94442;
+.btn-fichero:hover {
+  opacity: 0.7;
 }
 
-.btn-action-analisis {
-    background-color: #f4eee2;
-    color: #2c1810;
-    border: 1px solid #dcd5c7;
-    padding: 7px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+.btn-fichero-analisis { color: #5c3a21; }
+.btn-fichero-editar { color: #1a1917; }
+.btn-fichero-eliminar { color: #a93226; }
+
+.panel-admin-empty {
+  text-align: center;
+  padding: 80px 0;
+  color: #70695d;
+  font-style: italic;
 }
 
-.btn-action-analisis:hover {
-    background-color: #2c1810;
-    color: #ffffff;
-    border-color: #2c1810;
+/* 4. MODAL / FICHA DE CATALOGACIÓN (ESTILO PAPEL ANTIGUO) */
+.panel-admin-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 14, 12, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  padding: 20px;
 }
 
-.btn-action-editar{
-    background-color: #f4eee2;
-    color: #2c1810;
-    border: 1px solid #dcd5c7;
-    padding: 7px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+.panel-admin-modal-card {
+  background-color: #fcfaf2;
+  border: 2px solid #2c1810;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  border-radius: 2px;
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 40px;
+  box-sizing: border-box;
 }
 
-.btn-action-editar:hover{
-    background-color: #000000;
-    color: #ffffff;
-    border-color: #2c1810;
+.panel-admin-modal-header {
+  border-bottom: 1px solid #d4cebd;
+  padding-bottom: 18px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.text-center {
-    text-align: center;
+.panel-admin-modal-eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #70695d;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
 }
 
-.table-empty-state {
-    text-align: center;
-    padding: 40px;
-    color: #8c827a;
-    font-style: italic;
+.panel-admin-modal-title {
+  margin: 6px 0 0 0;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #1a1917;
+  font-family: "Playfair Display", Georgia, serif;
 }
 
-/* Modal */
-.admin-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(26, 23, 21, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(4px);
-    z-index: 1000;
+.panel-admin-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #70695d;
+  cursor: pointer;
 }
 
-.admin-modal-content {
-    background-color: #ffffff;
-    width: 550px;
-    max-width: 90%;
-    border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    overflow: hidden;
-    border: 1px solid #e8e2d5;
+.panel-admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  font-family: system-ui, sans-serif;
+}
+
+.panel-admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-admin-form-group-full {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-admin-form-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #544f46;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.panel-admin-form-input,
+.panel-admin-form-select,
+.panel-admin-form-textarea {
+  padding: 10px 14px;
+  border: 1px solid #d4cebd;
+  border-radius: 2px;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+  color: #1a1917;
+  outline: none;
+  font-family: system-ui, sans-serif;
+}
+
+.panel-admin-form-textarea {
+  resize: vertical;
+}
+
+.panel-admin-form-file {
+  font-size: 0.8rem;
+  color: #544f46;
+  padding: 6px 0;
+}
+
+.panel-admin-form-actions {
+  grid-column: 1 / -1;
+  border-top: 1px solid #d4cebd;
+  padding-top: 25px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.btn-modal-cancelar {
+  background-color: transparent;
+  color: #70695d;
+  border: 1px solid #d4cebd;
+  padding: 10px 20px;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+}
+
+.btn-modal-guardar {
+  background-color: #2c1810;
+  color: #fcfaf2;
+  border: none;
+  padding: 10px 26px;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
 }
