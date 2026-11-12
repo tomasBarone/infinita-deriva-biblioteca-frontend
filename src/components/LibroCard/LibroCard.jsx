@@ -28,7 +28,7 @@ const obtenerDegradadoDinamico = (titulo) => {
   return `linear-gradient(135deg, ${color.inicio} 0%, ${color.fin} 100%)`;
 };
 
-// Ícono SVG de Máquina de Escribir (Tipo SVG/Lucide)
+
 const TypewriterIcon = ({ active = false, size = 15 }) => (
   <svg 
     width={size} 
