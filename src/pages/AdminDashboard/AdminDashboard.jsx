@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import libroService from '../../services/libroService';
 import corrienteLiterariaService from '../../services/corrienteLiterariaService';
-import subgeneroLiterarioService from '../../services/subgeneroService'
+import subgeneroLiterarioService from '../../services/subgeneroService';
 import './AdminDashboard.css';
-import { toast } from 'react-toastify';
-
-
 
 const PanelAdmin = () => {
   const navigate = useNavigate();
@@ -14,13 +11,22 @@ const PanelAdmin = () => {
   const [libros, setLibros] = useState([]);
   const [corrientes, setCorrientes] = useState([]);
   const [subgeneros, setSubgeneros] = useState([]);
-  const [corrienteFiltro, setCorrienteFiltro] = useState('');
   const [cargando, setCargando] = useState(true);
+
+  // Estados de control de filtros
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [queryText, setQueryText] = useState('');
+  const [anioInicio, setAnioInicio] = useState('');
+  const [anioFin, setAnioFin] = useState('');
+  const [corrienteFiltro, setCorrienteFiltro] = useState('');
+
+  // Estado de Paginación (6 por página)
+  const [paginaActual, setPaginaActual] = useState(0);
+  const elementosPorPagina = 6;
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [libroEditar, setLibroEditar] = useState(null);
 
-  // Formulario ajustado sin propiedades ajenas al backend
   const [formData, setFormData] = useState({
     isbn: '',
     titulo: '',
@@ -145,9 +151,51 @@ const PanelAdmin = () => {
     }
   };
 
-  const librosFiltrados = corrienteFiltro 
-    ? libros.filter(l => (l.corrienteId?.toString() === corrienteFiltro || l.corrienteLiterariaId?.toString() === corrienteFiltro || l.corrienteNombre === corrientes.find(c => c.id.toString() === corrienteFiltro)?.nombre))
-    : libros;
+  const handleFiltrar = (e) => {
+    e.preventDefault();
+    setPaginaActual(0); // Reiniciar a la página 1 al filtrar
+  };
+
+  const handleLimpiar = () => {
+    setQueryText('');
+    setAnioInicio('');
+    setAnioFin('');
+    setCorrienteFiltro('');
+    setPaginaActual(0);
+  };
+
+  // 1. Filtrado completo de libros
+  const librosFiltrados = libros.filter(libro => {
+    const cumpleTexto = queryText.trim() === '' || 
+      libro.titulo?.toLowerCase().includes(queryText.toLowerCase()) || 
+      libro.autor?.toLowerCase().includes(queryText.toLowerCase());
+
+    const anio = parseInt(libro.anioPublicacion || libro.ano || 0);
+    const cumpleAnioInicio = anioInicio === '' || anio >= parseInt(anioInicio);
+    const cumpleAnioFin = anioFin === '' || anio <= parseInt(anioFin);
+
+    const cumpleCorriente = corrienteFiltro === '' || 
+      libro.corrienteId?.toString() === corrienteFiltro || 
+      libro.corrienteLiterariaId?.toString() === corrienteFiltro || 
+      libro.corrienteNombre === corrientes.find(c => c.id.toString() === corrienteFiltro)?.nombre;
+
+    return cumpleTexto && cumpleAnioInicio && cumpleAnioFin && cumpleCorriente;
+  });
+
+  // 2. Cálculos de Paginación
+  const totalPaginas = Math.ceil(librosFiltrados.length / elementosPorPagina) || 1;
+  
+ 
+  useEffect(() => {
+    if (paginaActual >= totalPaginas) {
+      setPaginaActual(0);
+    }
+  }, [totalPaginas, paginaActual]);
+
+  const indiceInicio = paginaActual * elementosPorPagina;
+  const librosPaginados = librosFiltrados.slice(indiceInicio, indiceInicio + elementosPorPagina);
+
+  const hayFiltrosActivos = queryText.trim() !== '' || anioInicio !== '' || anioFin !== '' || corrienteFiltro !== '';
 
   return (
     <div className="panel-admin-container">
@@ -169,24 +217,89 @@ const PanelAdmin = () => {
       {/* CONTENEDOR PRINCIPAL */}
       <div className="panel-admin-content">
         
-        {/* SECCIÓN DE FILTROS Y CONTADOR */}
-        <div className="panel-admin-filter-section">
-          <div className="panel-admin-filter-group">
-            <label className="panel-admin-filter-label">Filtrar por Corriente:</label>
-            <select
-              value={corrienteFiltro}
-              onChange={(e) => setCorrienteFiltro(e.target.value)}
-              className="panel-admin-select"
-            >
-              <option value="">Todas las Corrientes</option>
-              {corrientes.map(c => (
-                <option key={c.id} value={c.id}>{c.nombre}</option>
-              ))}
-            </select>
-          </div>
-          
+        {/* BOTÓN DESPLEGABLE DE FILTROS */}
+        <div className="panel-admin-filter-toggle-container">
+          <button
+            onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            className="btn-toggle-filtros"
+          >
+            <span>{mostrarFiltros ? 'Ocultar Filtros' : 'Filtrar Obras'}</span>
+            <span className={`filter-arrow ${mostrarFiltros ? 'rotated' : ''}`}>
+              ↓
+            </span>
+            {hayFiltrosActivos && !mostrarFiltros && (
+              <span className="filter-active-dot" title="Filtros activos" />
+            )}
+          </button>
+        </div>
+
+        {/* PANEL DE FILTROS AVANZADOS DESPLEGABLE */}
+        {mostrarFiltros && (
+          <form onSubmit={handleFiltrar} className="panel-admin-filter-form">
+            
+            <div className="filter-field-group search">
+              <label className="filter-field-label">Buscar por Título o Autor</label>
+              <input 
+                type="text" 
+                placeholder="Ej: Dostoievski, El Aleph..." 
+                value={queryText}
+                onChange={(e) => { setQueryText(e.target.value); setPaginaActual(0); }}
+                className="filter-input-classic"
+              />
+            </div>
+
+            <div className="filter-field-group select">
+              <label className="filter-field-label">Corriente Literaria</label>
+              <select
+                value={corrienteFiltro}
+                onChange={(e) => { setCorrienteFiltro(e.target.value); setPaginaActual(0); }}
+                className="filter-select-classic"
+              >
+                <option value="">Todas las Corrientes</option>
+                {corrientes.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-field-group year">
+              <label className="filter-field-label">Año Desde</label>
+              <input 
+                type="number" 
+                placeholder="Ej: 1900" 
+                value={anioInicio}
+                onChange={(e) => { setAnioInicio(e.target.value); setPaginaActual(0); }}
+                className="filter-input-classic"
+              />
+            </div>
+
+            <div className="filter-field-group year">
+              <label className="filter-field-label">Año Hasta</label>
+              <input 
+                type="number" 
+                placeholder="Ej: 2000" 
+                value={anioFin}
+                onChange={(e) => { setAnioFin(e.target.value); setPaginaActual(0); }}
+                className="filter-input-classic"
+              />
+            </div>
+
+            <div className="filter-actions-group">
+              <button 
+                type="button"
+                onClick={handleLimpiar}
+                className="btn-filter-limpiar"
+              >
+                Limpiar
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* CONTADOR DE REGISTROS */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
           <span className="panel-admin-counter">
-            Registros en inventario: <strong>{librosFiltrados.length}</strong>
+            Mostrando registros en inventario: <strong>{librosFiltrados.length}</strong> (Página {paginaActual + 1} de {totalPaginas})
           </span>
         </div>
 
@@ -195,8 +308,8 @@ const PanelAdmin = () => {
           <div className="panel-admin-empty">Consultando registros del archivo central...</div>
         ) : (
           <div className="fichero-list">
-            {librosFiltrados.length > 0 ? (
-              librosFiltrados.map((libro) => (
+            {librosPaginados.length > 0 ? (
+              librosPaginados.map((libro) => (
                 <div key={libro.id} className="fichero-card">
                   <div className="fichero-info">
                     <div className="fichero-meta-top">
@@ -211,7 +324,7 @@ const PanelAdmin = () => {
                   </div>
 
                   <div className="fichero-actions">
-                    <button onClick={() => navigate(`/libro/${libro.id}/analisis`)} className="btn-fichero btn-fichero-analisis">
+                    <button onClick={() => navigate(`/admin/analisis/${libro.id}`)} className="btn-fichero btn-fichero-analisis">
                       Análisis
                     </button>
                     <button onClick={() => handleAbrirModalEditar(libro)} className="btn-fichero btn-fichero-editar">
@@ -225,11 +338,68 @@ const PanelAdmin = () => {
               ))
             ) : (
               <div className="panel-admin-empty">
-                No se encontraron registros bibliográficos que coincidan con el filtro seleccionado.
+                No se encontraron registros bibliográficos que coincidan con los filtros seleccionados.
               </div>
             )}
           </div>
         )}
+
+        {/* PAGINACIÓN INFERIOR */}
+        {totalPaginas > 1 && (
+          <div style={{ 
+            marginTop: '60px', 
+            paddingTop: '20px',
+            borderTop: '1px solid #e5dec9',
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            gap: '20px',
+            fontFamily: 'system-ui, sans-serif'
+          }}>
+            <button 
+              disabled={paginaActual === 0}
+              onClick={() => setPaginaActual(prev => Math.max(0, prev - 1))}
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: 'transparent',
+                color: paginaActual === 0 ? '#b5ab9a' : '#2c1810',
+                border: '1px solid ' + (paginaActual === 0 ? '#b5ab9a' : '#2c1810'),
+                borderRadius: '2px',
+                cursor: paginaActual === 0 ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                fontSize: '0.8rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+            >
+              ← Anterior
+            </button>
+
+            <span style={{ fontSize: '0.85rem', color: '#544f46', fontWeight: '500' }}>
+              Página <strong>{paginaActual + 1}</strong> de <strong>{totalPaginas}</strong>
+            </span>
+
+            <button 
+              disabled={paginaActual + 1 >= totalPaginas}
+              onClick={() => setPaginaActual(prev => Math.min(totalPaginas - 1, prev + 1))}
+              style={{ 
+                padding: '10px 20px', 
+                backgroundColor: 'transparent',
+                color: (paginaActual + 1 >= totalPaginas) ? '#b5ab9a' : '#2c1810',
+                border: '1px solid ' + ((paginaActual + 1 >= totalPaginas) ? '#b5ab9a' : '#2c1810'),
+                borderRadius: '2px',
+                cursor: (paginaActual + 1 >= totalPaginas) ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                fontSize: '0.8rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+            >
+              Siguiente →
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* MODAL / FICHA DE CATALOGACIÓN */}
