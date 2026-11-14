@@ -2,7 +2,7 @@ import api from './api';
 import axios from 'axios';
 
 export const libroService = {
-  obtenerTodos: async (pagina = 0, tamano = 10) => {
+  obtenerTodos: async (pagina = 0, tamano = 1000) => {
     try {
      
       const response = await api.get('/libros/all', {
