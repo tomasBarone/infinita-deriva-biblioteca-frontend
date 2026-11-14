@@ -2,42 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import libroService from '../../services/libroService';
 import corrienteLiterariaService from '../../services/corrienteLiterariaService';
-import subgeneroLiterarioService from '../../services/subgeneroService';
-import './AdminDashboard.css';
+import FormularioLibro from '../../components/FormularioLibro';
+import './AdminDashboard.css'
 
 const PanelAdmin = () => {
   const navigate = useNavigate();
 
   const [libros, setLibros] = useState([]);
   const [corrientes, setCorrientes] = useState([]);
-  const [subgeneros, setSubgeneros] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // Estados de control de filtros
+
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [queryText, setQueryText] = useState('');
   const [anioInicio, setAnioInicio] = useState('');
   const [anioFin, setAnioFin] = useState('');
   const [corrienteFiltro, setCorrienteFiltro] = useState('');
 
-  // Estado de Paginación (6 por página)
+
   const [paginaActual, setPaginaActual] = useState(0);
   const elementosPorPagina = 6;
 
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [libroEditar, setLibroEditar] = useState(null);
 
-  const [formData, setFormData] = useState({
-    isbn: '',
-    titulo: '',
-    autor: '',
-    ejemplares: 1,
-    corrienteLiterariaId: '',
-    subgeneroLiterarioId: '',
-    anioPublicacion: '',
-    sinopsis: ''
-  });
-  const [imagenArchivo, setImagenArchivo] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [libroEditar, setLibroEditar] = useState(null);
 
   const cargarDatos = async () => {
     setCargando(true);
@@ -61,83 +49,14 @@ const PanelAdmin = () => {
     cargarDatos();
   }, []);
 
-  const handleCorrienteChangeModal = async (e) => {
-    const idCorr = e.target.value;
-    setFormData(prev => ({ ...prev, corrienteLiterariaId: idCorr, subgeneroLiterarioId: '' }));
-    if (idCorr) {
-      try {
-        const subData = await subgeneroLiterarioService.obtenerPorCorriente(idCorr);
-        setSubgeneros(subData);
-      } catch (err) {
-        console.error("Error al cargar subgéneros:", err);
-      }
-    } else {
-      setSubgeneros([]);
-    }
-  };
-
   const handleAbrirModalCrear = () => {
     setLibroEditar(null);
-    setFormData({
-      isbn: '',
-      titulo: '',
-      autor: '',
-      ejemplares: 1,
-      corrienteLiterariaId: '',
-      subgeneroLiterarioId: '',
-      anioPublicacion: '',
-      sinopsis: ''
-    });
-    setImagenArchivo(null);
-    setMostrarModal(true);
+    setIsModalOpen(true);
   };
 
-  const handleAbrirModalEditar = async (libro) => {
+  const handleAbrirModalEditar = (libro) => {
     setLibroEditar(libro);
-    setFormData({
-      isbn: libro.isbn || '',
-      titulo: libro.titulo || '',
-      autor: libro.autor || '',
-      ejemplares: libro.ejemplares || 1,
-      corrienteLiterariaId: libro.corrienteLiterariaId || libro.corrienteId || '',
-      subgeneroLiterarioId: libro.subgeneroLiterarioId || libro.subgeneroId || '',
-      anioPublicacion: libro.anioPublicacion || libro.ano || '',
-      sinopsis: libro.sinopsis || ''
-    });
-
-    if (libro.corrienteLiterariaId || libro.corrienteId) {
-      try {
-        const subData = await subgeneroLiterarioService.obtenerPorCorriente(libro.corrienteLiterariaId || libro.corrienteId);
-        setSubgeneros(subData);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    setImagenArchivo(null);
-    setMostrarModal(true);
-  };
-
-  const handleGuardarLibro = async (e) => {
-    e.preventDefault();
-    try {
-      const dataPayload = new FormData();
-      dataPayload.append('libro', new Blob([JSON.stringify(formData)], { type: 'application/json' }));
-      if (imagenArchivo) {
-        dataPayload.append('imagen', imagenArchivo);
-      }
-
-      if (libroEditar) {
-        await libroService.actualizar(libroEditar.id, dataPayload);
-      } else {
-        await libroService.crear(dataPayload);
-      }
-
-      setMostrarModal(false);
-      cargarDatos();
-    } catch (err) {
-      console.error("Error al guardar libro:", err);
-    }
+    setIsModalOpen(true);
   };
 
   const handleEliminarLibro = async (id) => {
@@ -153,7 +72,7 @@ const PanelAdmin = () => {
 
   const handleFiltrar = (e) => {
     e.preventDefault();
-    setPaginaActual(0); // Reiniciar a la página 1 al filtrar
+    setPaginaActual(0);
   };
 
   const handleLimpiar = () => {
@@ -164,7 +83,7 @@ const PanelAdmin = () => {
     setPaginaActual(0);
   };
 
-  // 1. Filtrado completo de libros
+  // Filtrado de libros
   const librosFiltrados = libros.filter(libro => {
     const cumpleTexto = queryText.trim() === '' || 
       libro.titulo?.toLowerCase().includes(queryText.toLowerCase()) || 
@@ -182,10 +101,9 @@ const PanelAdmin = () => {
     return cumpleTexto && cumpleAnioInicio && cumpleAnioFin && cumpleCorriente;
   });
 
-  // 2. Cálculos de Paginación
+  // Paginación
   const totalPaginas = Math.ceil(librosFiltrados.length / elementosPorPagina) || 1;
   
- 
   useEffect(() => {
     if (paginaActual >= totalPaginas) {
       setPaginaActual(0);
@@ -402,154 +320,13 @@ const PanelAdmin = () => {
 
       </div>
 
-      {/* MODAL / FICHA DE CATALOGACIÓN */}
-      {mostrarModal && (
-        <div className="panel-admin-modal-overlay">
-          <div className="panel-admin-modal-card">
-            
-            <div className="panel-admin-modal-header">
-              <div>
-                <span className="panel-admin-modal-eyebrow">REGISTRO BIBLIOGRÁFICO OFICIAL</span>
-                <h3 className="panel-admin-modal-title">
-                  {libroEditar ? 'Modificar Ficha de Obra' : 'Catalogar Nueva Obra'}
-                </h3>
-              </div>
-              <button onClick={() => setMostrarModal(false)} className="panel-admin-modal-close">
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleGuardarLibro} className="panel-admin-form-grid">
-              
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">ISBN *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: 9789501239251"
-                  value={formData.isbn}
-                  onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                  className="panel-admin-form-input"
-                />
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Título *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: El Aleph"
-                  value={formData.titulo}
-                  onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                  className="panel-admin-form-input"
-                />
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Autor *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Jorge Luis Borges"
-                  value={formData.autor}
-                  onChange={(e) => setFormData({ ...formData, autor: e.target.value })}
-                  className="panel-admin-form-input"
-                />
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Ejemplares Disponibles *</label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={formData.ejemplares}
-                  onChange={(e) => setFormData({ ...formData, ejemplares: parseInt(e.target.value) || 0 })}
-                  className="panel-admin-form-input"
-                />
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Corriente Literaria *</label>
-                <select
-                  required
-                  value={formData.corrienteLiterariaId}
-                  onChange={handleCorrienteChangeModal}
-                  className="panel-admin-form-select"
-                >
-                  <option value="">Seleccione corriente</option>
-                  {corrientes.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Subgénero</label>
-                <select
-                  value={formData.subgeneroLiterarioId}
-                  onChange={(e) => setFormData({ ...formData, subgeneroLiterarioId: e.target.value })}
-                  className="panel-admin-form-select"
-                >
-                  <option value="">Seleccione subgénero</option>
-                  {subgeneros.map(s => (
-                    <option key={s.id} value={s.id}>{s.nombre}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="panel-admin-form-group">
-                <label className="panel-admin-form-label">Año de Publicación</label>
-                <input
-                  type="number"
-                  placeholder="Ej: 1949"
-                  value={formData.anioPublicacion}
-                  onChange={(e) => setFormData({ ...formData, anioPublicacion: e.target.value })}
-                  className="panel-admin-form-input"
-                />
-              </div>
-
-              <div className="panel-admin-form-group-full">
-                <label className="panel-admin-form-label">Sinopsis</label>
-                <textarea
-                  rows="3"
-                  placeholder="Breve descripción analítica de la obra..."
-                  value={formData.sinopsis}
-                  onChange={(e) => setFormData({ ...formData, sinopsis: e.target.value })}
-                  className="panel-admin-form-textarea"
-                />
-              </div>
-
-              <div className="panel-admin-form-group-full">
-                <label className="panel-admin-form-label">Portada Personalizada (Opcional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImagenArchivo(e.target.files[0])}
-                  className="panel-admin-form-file"
-                />
-              </div>
-
-              <div className="panel-admin-form-actions">
-                <button
-                  type="button"
-                  onClick={() => setMostrarModal(false)}
-                  className="btn-modal-cancelar"
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  type="submit"
-                  className="btn-modal-guardar"
-                >
-                  {libroEditar ? 'Actualizar Ficha' : 'Registrar en Archivo'}
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
+      {/* MODAL / FICHA DE CATALOGACIÓN USANDO EL COMPONENTE EXTERNO */}
+      {isModalOpen && (
+        <FormularioLibro 
+          cerrarModal={() => { setIsModalOpen(false); setLibroEditar(null); }} 
+          refrescarLista={cargarDatos}
+          libroAEditar={libroEditar}
+        />
       )}
 
     </div>

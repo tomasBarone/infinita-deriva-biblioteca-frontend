@@ -109,7 +109,23 @@ export const libroService = {
     console.log('Enviando libroDTO al servidor para actualizar:', libroDTO);
     const response = await api.put(`/libros/actualizar/${id}`, libroDTO);
     return response.data;
-  }
+  },
+
+  actualizarConFoto: async (id, libroData, archivoImagen) => {
+    const formData = new FormData();
+    formData.append('libro', new Blob([JSON.stringify(libroData)], { type: 'application/json' }));
+    
+    if (archivoImagen) {
+        formData.append('imagen', archivoImagen);
+    }
+
+    const response = await api.put(`/libros/actualizar-con-foto/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+}
 
 };
 
