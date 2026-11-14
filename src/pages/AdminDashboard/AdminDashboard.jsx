@@ -33,7 +33,7 @@ const PanelAdmin = () => {
         corrienteLiterariaService.obtenerTodos()
       ]);
       
-       console.log("Datos ", dataLibros);
+       
 
       const listaLibros = dataLibros?.content || (Array.isArray(dataLibros) ? dataLibros : []);
       setLibros(listaLibros);
