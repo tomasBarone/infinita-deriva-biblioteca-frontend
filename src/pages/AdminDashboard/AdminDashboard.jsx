@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import libroService from '../../services/libroService';
 import corrienteLiterariaService from '../../services/corrienteLiterariaService';
 import FormularioLibro from '../../components/FormularioLibro';
-import './AdminDashboard.css'
+import './AdminDashboard.css';
 
 const PanelAdmin = () => {
   const navigate = useNavigate();
@@ -12,17 +12,14 @@ const PanelAdmin = () => {
   const [corrientes, setCorrientes] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [queryText, setQueryText] = useState('');
   const [anioInicio, setAnioInicio] = useState('');
   const [anioFin, setAnioFin] = useState('');
   const [corrienteFiltro, setCorrienteFiltro] = useState('');
 
-
   const [paginaActual, setPaginaActual] = useState(0);
   const elementosPorPagina = 6;
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [libroEditar, setLibroEditar] = useState(null);
@@ -30,11 +27,14 @@ const PanelAdmin = () => {
   const cargarDatos = async () => {
     setCargando(true);
     try {
+ 
       const [dataLibros, dataCorrientes] = await Promise.all([
-        libroService.obtenerTodosSinPaginacion ? libroService.obtenerTodosSinPaginacion() : libroService.obtenerTodos(0),
+        libroService.obtenerTodos ? libroService.obtenerTodos(0, 1000, 'titulo') : Promise.resolve([]),
         corrienteLiterariaService.obtenerTodos()
       ]);
       
+       console.log("Datos ", dataLibros);
+
       const listaLibros = dataLibros?.content || (Array.isArray(dataLibros) ? dataLibros : []);
       setLibros(listaLibros);
       setCorrientes(dataCorrientes);
@@ -320,7 +320,7 @@ const PanelAdmin = () => {
 
       </div>
 
-      {/* MODAL / FICHA DE CATALOGACIÓN USANDO EL COMPONENTE EXTERNO */}
+    
       {isModalOpen && (
         <FormularioLibro 
           cerrarModal={() => { setIsModalOpen(false); setLibroEditar(null); }} 
