@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import analisisService from '../../services/analisisService';
-import PantallaAnalisis from '../PantallaAnalisis/PantallaAnalisis';
 import './AdminAnalisisForm.css';
 
 function AdminAnalisisForm() {
-    const { id } = useParams(); // ID del libro que viene por la URL
+    const { id } = useParams(); // ID del libro
     const navigate = useNavigate();
 
-    // Estado único para controlar el formulario
     const [formData, setFormData] = useState({
         introduccionTeorica: '',
         ejePsicologico: '',
@@ -16,11 +14,24 @@ function AdminAnalisisForm() {
         mapaSensaciones: ''
     });
 
+    // Control de acordeones abiertos (todos abiertos por defecto o puedes alternar)
+    const [seccionesAbiertas, setSeccionesAbiertas] = useState({
+        conceptual: true,
+        introduccion: true,
+        sensaciones: true
+    });
+
+    const toggleSeccion = (seccion) => {
+        setSeccionesAbiertas(prev => ({
+            ...prev,
+            [seccion]: !prev[seccion]
+        }));
+    };
+
     const [esEdicion, setEsEdicion] = useState(false);
     const [cargando, setCargando] = useState(true);
-    const [mensaje, setMensaje] = useState({ texto: '', tipo: '' }); // Para alertas de éxito/error
+    const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
 
-    // Al cargar la pantalla, verificamos si el libro ya tiene un análisis previo
     useEffect(() => {
         setCargando(true);
         analisisService.obtenerPorLibroId(id)
@@ -32,13 +43,11 @@ function AdminAnalisisForm() {
                         sustratoFilosofico: data.sustratoFilosofico || '',
                         mapaSensaciones: data.mapaSensaciones || ''
                     });
-                    setEsEdicion(true); // Encontró datos, el botón final será para actualizar
+                    setEsEdicion(true);
                 }
                 setCargando(false);
             })
-            .catch(err => {
-                // Si el backend tira error porque no existe (tu RuntimeException), 
-                // asumimos que es una creación nueva y dejamos los campos vacíos de forma limpia.
+            .catch(() => {
                 setEsEdicion(false);
                 setCargando(false);
             });
@@ -56,9 +65,8 @@ function AdminAnalisisForm() {
         e.preventDefault();
         setMensaje({ texto: '', tipo: '' });
 
-        // Estructuramos el DTO tal cual lo espera tu controlador de Spring Boot
         const payload = {
-            id: parseInt(id), // El DTO de Request mapea el id del libro aquí
+            id: parseInt(id),
             introduccionTeorica: formData.introduccionTeorica,
             ejePsicologico: formData.ejePsicologico,
             sustratoFilosofico: formData.sustratoFilosofico,
@@ -68,103 +76,172 @@ function AdminAnalisisForm() {
         try {
             if (esEdicion) {
                 await analisisService.actualizarAnalisis(payload);
-                setMensaje({ texto: '¡Análisis actualizado con éxito!', tipo: 'exito' });
-               
+                setMensaje({ texto: '¡Ficha de análisis actualizada con éxito en el archivo!', tipo: 'exito' });
             } else {
                 await analisisService.crearAnalisis(payload);
-                setMensaje({ texto: '¡Análisis creado y vinculado con éxito!', tipo: 'exito' });
+                setMensaje({ texto: '¡Análisis crítico dado de alta y vinculado con éxito!', tipo: 'exito' });
                 setEsEdicion(true);
             }
         } catch (error) {
-            setMensaje({ texto: 'Hubo un error al guardar la información académica.', tipo: 'error' });
+            setMensaje({ texto: 'Hubo un error al resguardar la información académica.', tipo: 'error' });
             console.error('Error al enviar el formulario de análisis:', error);
         }
     };
 
-    if (cargando) return <div className="loading">Analizando estado de la obra...</div>;
+    if (cargando) return <div className="loading-analisis">Consultando anales críticos de la obra...</div>;
 
     return (
-        <div className="admin-form-container">
-            <button className="btn-back" onClick={() => navigate('/admin')}>
-                ← Volver al Dashboard
-            </button>
-
-            <header className="form-header">
-                <h2>{esEdicion ? 'Editar Análisis Literario' : 'Cargar Nuevo Análisis Literario'}</h2>
-                <p>Configurando los datos académicos para el Libro ID: <strong>{id}</strong></p>
+        <div className="admin-analisis-container">
+            
+            {/* CABECERA INSTITUCIONAL */}
+            <header className="admin-analisis-hero">
+                <div className="admin-analisis-hero-inner">
+                    <button className="btn-volver-dashboard" onClick={() => navigate('/admin')}>
+                        ← Volver al Archivo Central
+                    </button>
+                    <div>
+                        <p className="admin-analisis-eyebrow">ESTUDIO CRÍTICO DE LA OBRA — REF. #{id}</p>
+                        <h1 className="admin-analisis-title">
+                            {esEdicion ? 'Edición de Análisis Literario' : 'Redacción de Nuevo Análisis'}
+                        </h1>
+                    </div>
+                </div>
             </header>
 
-            {mensaje.texto && (
-                <div className={`alerta ${mensaje.tipo}`}>
-                    {mensaje.texto}
-                </div>
-            )}
+            {/* CUERPO DEL ESTUDIO EN FORMATO ACORDEÓN */}
+            <div className="admin-analisis-content">
 
-            <form onSubmit={handleSubmit} className="form-analisis">
-                {/* Inputs Cortos */}
-                <div className="form-group-row">
-                    <div className="form-group">
-                        <label htmlFor="sustratoFilosofico">Sustrato Filosófico</label>
-                        <input
-                            type="text"
-                            id="sustratoFilosofico"
-                            name="sustratoFilosofico"
-                            value={formData.sustratoFilosofico}
-                            onChange={handleChange}
-                            placeholder="Ej: Existencialismo, Nihilismo, Humanismo..."
-                            required
-                        />
+                {mensaje.texto && (
+                    <div className={`alerta-mensaje ${mensaje.tipo}`}>
+                        {mensaje.texto}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="form-cuaderno-critico">
+                    
+                    {/* ACORDEÓN 1: MARCO CONCEPTUAL */}
+                    <div className="acordeon-seccion">
+                        <button 
+                            type="button" 
+                            className="acordeon-header" 
+                            onClick={() => toggleSeccion('conceptual')}
+                        >
+                            <h3 className="acordeon-titulo">I. Marco Conceptual (Sustrato Filosófico y Eje Psicológico)</h3>
+                            <span className="acordeon-icono">{seccionesAbiertas.conceptual ? '−' : '+'}</span>
+                        </button>
+
+                        {seccionesAbiertas.conceptual && (
+                            <div className="acordeon-contenido">
+                                <div className="form-row-dual">
+                                    <div className="form-field-group">
+                                        <label className="form-field-label" htmlFor="sustratoFilosofico">Sustrato Filosófico</label>
+                                        <input
+                                            type="text"
+                                            id="sustratoFilosofico"
+                                            name="sustratoFilosofico"
+                                            value={formData.sustratoFilosofico}
+                                            onChange={handleChange}
+                                            placeholder="Ej: Existencialismo, Nihilismo..."
+                                            required
+                                            className="form-input-clasico"
+                                        />
+                                    </div>
+
+                                    <div className="form-field-group">
+                                        <label className="form-field-label" htmlFor="ejePsicologico">Eje Psicológico</label>
+                                        <input
+                                            type="text"
+                                            id="ejePsicologico"
+                                            name="ejePsicologico"
+                                            value={formData.ejePsicologico}
+                                            onChange={handleChange}
+                                            placeholder="Ej: Dualidad de la psique, Melancolía..."
+                                            required
+                                            className="form-input-clasico"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="ejePsicologico">Eje Psicológico</label>
-                        <textarea
-                            id="ejePsicologico"
-                            name="ejePsicologico"
-                            value={formData.ejePsicologico}
-                            onChange={handleChange}
-                            rows="3"
-                            placeholder="Ej: Complejo de Edipo, Dualidad de la psique..."
-                            required
-  
-                        />
+                    {/* ACORDEÓN 2: INTRODUCCIÓN TEÓRICA */}
+                    <div className="acordeon-seccion">
+                        <button 
+                            type="button" 
+                            className="acordeon-header" 
+                            onClick={() => toggleSeccion('introduccion')}
+                        >
+                            <h3 className="acordeon-titulo">II. Introducción Teórica y Enfoque Crítico</h3>
+                            <span className="acordeon-icono">{seccionesAbiertas.introduccion ? '−' : '+'}</span>
+                        </button>
+
+                        {seccionesAbiertas.introduccion && (
+                            <div className="acordeon-contenido">
+                                <div className="form-field-group">
+                                    <textarea
+                                        id="introduccionTeorica"
+                                        name="introduccionTeorica"
+                                        value={formData.introduccionTeorica}
+                                        onChange={handleChange}
+                                        rows="7"
+                                        placeholder="Desarrolle el marco teórico, referencias a fuentes primarias o análisis contextual de la obra..."
+                                        required
+                                        className="form-textarea-clasico"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                {/* Textareas de contenido extenso */}
-                <div className="form-group">
-                    <label htmlFor="introduccionTeorica">Introducción Teórica / Enfoque Crítico</label>
-                    <textarea
-                        id="introduccionTeorica"
-                        name="introduccionTeorica"
-                        value={formData.introduccionTeorica}
-                        onChange={handleChange}
-                        rows="6"
-                        placeholder="Escribí el marco teórico, referencias de autores o análisis contextual de la obra..."
-                        required
-                    ></textarea>
-                </div>
+                    {/* ACORDEÓN 3: MAPA DE SENSACIONES */}
+                    <div className="acordeon-seccion">
+                        <button 
+                            type="button" 
+                            className="acordeon-header" 
+                            onClick={() => toggleSeccion('sensaciones')}
+                        >
+                            <h3 className="acordeon-titulo">III. Arquitectura Sensorial y Mapa de Sensaciones</h3>
+                            <span className="acordeon-icono">{seccionesAbiertas.sensaciones ? '−' : '+'}</span>
+                        </button>
 
-                <div className="form-group">
-                    <label htmlFor="mapaSensaciones">Mapa de Sensaciones / Evolución de Personajes</label>
-                    <textarea
-                        id="mapaSensaciones"
-                        name="mapaSensaciones"
-                        value={formData.mapaSensaciones}
-                        onChange={handleChange}
-                        rows="6"
-                        placeholder="Describe el viaje emocional o la atmósfera sensorial del libro..."
-                        required
-                    ></textarea>
-                </div>
+                        {seccionesAbiertas.sensaciones && (
+                            <div className="acordeon-contenido">
+                                <div className="form-field-group">
+                                    <textarea
+                                        id="mapaSensaciones"
+                                        name="mapaSensaciones"
+                                        value={formData.mapaSensaciones}
+                                        onChange={handleChange}
+                                        rows="7"
+                                        placeholder="Describa el viaje atmosférico, estilístico o la evolución conceptual de los personajes..."
+                                        required
+                                        className="form-textarea-clasico"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-                <button type="submit" className="btn-submit">
-                    {esEdicion ? 'Guardar Cambios' : 'Dar de Alta Análisis'}
-                </button>
-                 <button class="btn-analisis" onClick={() => navigate(`/libro/${id}/analisis`)}>Ir al Análisis</button>
-            </form>
+                    {/* Barra de Acciones Final */}
+                    <div className="form-actions-bar">
+                        <button type="submit" className="btn-guardar-analisis">
+                            {esEdicion ? 'Actualizar Ficha de Análisis' : 'Consolidar Análisis en el Archivo'}
+                        </button>
+                        
+                        <button 
+                            type="button" 
+                            className="btn-ver-publico" 
+                            onClick={() => navigate(`/libro/${id}/analisis`)}
+                        >
+                            Vista Previa de Lectura ↗
+                        </button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     );
 }
 
-export default AdminAnalisisForm;
+export default AdminAnalisisForm; 

@@ -1,86 +1,252 @@
-.admin-form-container {
-    max-width: 850px;
-    margin: 40px auto;
-    padding: 20px;
-    font-family: system-ui, -apple-system, sans-serif;
-}
-.btn-back {
-    background: none;
-    border: none;
-    color: #3498db;
-    cursor: pointer;
-    font-size: 1rem;
-    margin-bottom: 20px;
-}
-.form-header h2 {
-    margin-bottom: 5px;
-    color: #2c3e50;
-}
-.form-group-row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-.form-group {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    margin-bottom: 20px;
-}
-.form-group label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #34495e;
-}
-.form-group input, .form-group textarea {
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-.form-group textarea {
-    resize: vertical;
-    font-family: inherit;
-}
-.btn-submit {
-    background-color: #ffff;
-    color: rgb(0, 0, 0);
-    padding: 14px 28px;
-    border: 1px solid #191f1b;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.7s;
-}
-.btn-submit:hover {
-    background-color: #4e9c6f;
-    color: #fff;
+.admin-analisis-container {
+  background-color: #fcfaf2;
+  min-height: 100vh;
+  font-family: "Playfair Display", Georgia, serif;
+  color: #1a1917;
+  margin: 0;
+  padding-bottom: 100px;
 }
 
-.btn-analisis {
-    background-color: #ffff;
-    color: rgb(0, 0, 0);
-    padding: 14px 28px;
-    border: 1px solid #191f1b;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.5s;
-    margin-left: 10px; /* Added margin for spacing */
+/* 1. CABECERA INSTITUCIONAL */
+.admin-analisis-hero {
+  background-color: #0f0e0c;
+  color: #fcfaf2;
+  padding: 50px 8%;
+  border-bottom: 2px solid #2c1810;
 }
 
-.btn-analisis:hover {
-    background-color: #2980b9;
-    color: #fff;
+.admin-analisis-hero-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.alerta {
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    font-weight: 500;
+.btn-volver-dashboard {
+  background: none;
+  border: none;
+  color: #a8a297;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  align-self: flex-start;
+  padding: 0;
+  transition: color 0.2s;
 }
-.alerta.exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.alerta.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+.btn-volver-dashboard:hover {
+  color: #fcfaf2;
+}
+
+.admin-analisis-eyebrow {
+  color: #a8a297;
+  font-size: 0.7rem;
+  margin: 0;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: system-ui, sans-serif;
+}
+
+.admin-analisis-title {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin: 0;
+  font-family: serif;
+}
+
+/* 2. CONTENEDOR Y ACORDEÓN */
+.admin-analisis-content {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 5%;
+}
+
+.alerta-mensaje {
+  padding: 14px 20px;
+  margin-bottom: 30px;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  font-family: system-ui, sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.alerta-mensaje.exito {
+  background-color: #eaf2ed;
+  color: #274e31;
+  border: 1px solid #b5d3c0;
+}
+
+.alerta-mensaje.error {
+  background-color: #faeaea;
+  color: #78281f;
+  border: 1px solid #d98880;
+}
+
+.form-cuaderno-critico {
+  background-color: #fcfaf2;
+  display: flex;
+  flex-direction: column;
+}
+
+/* CADA SECCIÓN DEL ACORDEÓN */
+.acordeon-seccion {
+  border-top: 1px solid #d4cebd;
+}
+
+.acordeon-seccion:last-of-type {
+  border-bottom: 1px solid #d4cebd;
+}
+
+.acordeon-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 24px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.acordeon-header:hover {
+  background-color: rgba(212, 206, 189, 0.2);
+}
+
+.acordeon-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1917;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+.acordeon-icono {
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: #5c3a21;
+  font-family: system-ui, sans-serif;
+  width: 24px;
+  text-align: right;
+}
+
+.acordeon-contenido {
+  padding: 0 10px 30px 10px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.form-row-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #544f46;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: system-ui, sans-serif;
+}
+
+.form-input-clasico,
+.form-textarea-clasico {
+  padding: 12px 16px;
+  border: 1px solid #d4cebd;
+  border-radius: 2px;
+  background-color: #ffffff;
+  font-size: 0.95rem;
+  color: #1a1917;
+  outline: none;
+  font-family: "Playfair Display", Georgia, serif;
+  transition: border-color 0.2s;
+}
+
+.form-input-clasico:focus,
+.form-textarea-clasico:focus {
+  border-color: #5c3a21;
+}
+
+.form-textarea-clasico {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* 3. BARRA DE ACCIONES INFERIOR */
+.form-actions-bar {
+  border-top: 2px solid #2c1810;
+  padding-top: 30px;
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-family: system-ui, sans-serif;
+}
+
+.btn-guardar-analisis {
+  background-color: #2c1810;
+  color: #fcfaf2;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-guardar-analisis:hover {
+  background-color: #1a100a;
+}
+
+.btn-ver-publico {
+  background-color: transparent;
+  color: #5c3a21;
+  border: 1px solid #d4cebd;
+  padding: 11px 22px;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ver-publico:hover {
+  background-color: #efebe0;
+  border-color: #5c3a21;
+}
+
+.loading-analisis {
+  text-align: center;
+  padding: 100px;
+  color: #70695d;
+  font-style: italic;
+  font-family: serif;
+  background-color: #fcfaf2;
+  min-height: 100vh;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
