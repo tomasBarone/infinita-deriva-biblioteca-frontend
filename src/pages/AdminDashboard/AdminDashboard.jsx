@@ -27,14 +27,11 @@ const PanelAdmin = () => {
   const cargarDatos = async () => {
     setCargando(true);
     try {
- 
       const [dataLibros, dataCorrientes] = await Promise.all([
         libroService.obtenerTodos ? libroService.obtenerTodos(0, 1000, 'titulo') : Promise.resolve([]),
         corrienteLiterariaService.obtenerTodos()
       ]);
       
-       
-
       const listaLibros = dataLibros?.content || (Array.isArray(dataLibros) ? dataLibros : []);
       setLibros(listaLibros);
       setCorrientes(dataCorrientes);
@@ -118,7 +115,7 @@ const PanelAdmin = () => {
   return (
     <div className="panel-admin-container">
       
-      {/* CABECERA INSTITUCIONAL */}
+    
       <div className="panel-admin-hero">
         <div className="panel-admin-hero-inner">
           <div>
@@ -132,10 +129,10 @@ const PanelAdmin = () => {
         </div>
       </div>
 
-      {/* CONTENEDOR PRINCIPAL */}
+    
       <div className="panel-admin-content">
         
-        {/* BOTÓN DESPLEGABLE DE FILTROS */}
+       
         <div className="panel-admin-filter-toggle-container">
           <button
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
@@ -221,51 +218,68 @@ const PanelAdmin = () => {
           </span>
         </div>
 
-        {/* LISTADO EN FORMATO FICHERO DE ARCHIVO */}
+        {/* GRILLA / TABLA ACADÉMICA DE REGISTROS */}
         {cargando ? (
           <div className="panel-admin-empty">Consultando registros del archivo central...</div>
         ) : (
-          <div className="fichero-list">
-            {librosPaginados.length > 0 ? (
-              librosPaginados.map((libro) => (
-                <div key={libro.id} className="fichero-card">
-                  <div className="fichero-info">
-                    <div className="fichero-meta-top">
-                      <span>REF. #{libro.id}</span>
-                      <span>•</span>
-                      <span className="fichero-badge">{libro.corrienteNombre || 'LITERATURA'}</span>
-                      <span>•</span>
-                      <span>Ejemplares: {libro.ejemplares !== undefined ? `${libro.ejemplares} disp.` : '-'}</span>
-                    </div>
-                    <h3 className="fichero-titulo">{libro.titulo}</h3>
-                    <p className="fichero-autor">{libro.autor}</p>
-                  </div>
-
-                  <div className="fichero-actions">
-                    <button onClick={() => navigate(`/admin/analisis/${libro.id}`)} className="btn-fichero btn-fichero-analisis">
-                      Análisis
-                    </button>
-                    <button onClick={() => handleAbrirModalEditar(libro)} className="btn-fichero btn-fichero-editar">
-                      Modificar
-                    </button>
-                    <button onClick={() => handleEliminarLibro(libro.id)} className="btn-fichero btn-fichero-eliminar">
-                      Retirar
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="panel-admin-empty">
-                No se encontraron registros bibliográficos que coincidan con los filtros seleccionados.
-              </div>
-            )}
+          <div className="fichero-table-container">
+            <table className="fichero-table">
+              <thead>
+                <tr>
+                  <th>Ref.</th>
+                  <th>Obra</th>
+                  <th>Autor</th>
+                  <th>Corriente Literaria</th>
+                  <th>Ejemplares</th>
+                  <th style={{ textAlign: 'right' }}>Gestión</th>
+                </tr>
+              </thead>
+              <tbody>
+                {librosPaginados.length > 0 ? (
+                  librosPaginados.map((libro) => (
+                    <tr key={libro.id}>
+                      <td className="fichero-table-ref">#{libro.id}</td>
+                      <td>
+                        <div className="fichero-table-titulo">{libro.titulo}</div>
+                      </td>
+                      <td>
+                        <div className="fichero-table-autor">{libro.autor}</div>
+                      </td>
+                      <td>
+                        <span className="fichero-badge">{libro.corrienteNombre || 'LITERATURA'}</span>
+                      </td>
+                      <td>{libro.ejemplares !== undefined ? `${libro.ejemplares} disp.` : '-'}</td>
+                      <td>
+                        <div className="fichero-table-actions">
+                          <button onClick={() => navigate(`/admin/analisis/${libro.id}`)} className="btn-fichero btn-fichero-analisis">
+                            Análisis
+                          </button>
+                          <button onClick={() => handleAbrirModalEditar(libro)} className="btn-fichero btn-fichero-editar">
+                            Modificar
+                          </button>
+                          <button onClick={() => handleEliminarLibro(libro.id)} className="btn-fichero btn-fichero-eliminar">
+                            Retirar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#70695d', fontStyle: 'italic' }}>
+                      No se encontraron registros bibliográficos que coincidan con los filtros seleccionados.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
 
         {/* PAGINACIÓN INFERIOR */}
         {totalPaginas > 1 && (
           <div style={{ 
-            marginTop: '60px', 
+            marginTop: '40px', 
             paddingTop: '20px',
             borderTop: '1px solid #e5dec9',
             display: 'flex', 
@@ -320,7 +334,7 @@ const PanelAdmin = () => {
 
       </div>
 
-    
+      {/* MODAL / FICHA DE CATALOGACIÓN */}
       {isModalOpen && (
         <FormularioLibro 
           cerrarModal={() => { setIsModalOpen(false); setLibroEditar(null); }} 
