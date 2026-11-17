@@ -17,7 +17,8 @@ function PantallaAnalisis() {
     const [seccionesAbiertas, setSeccionesAbiertas] = useState({
         ejes: true,
         teoria: true,
-        sensaciones: true
+        sensaciones: false,
+        contexto: false
     });
 
     const toggleSeccion = (seccion) => {
@@ -132,7 +133,7 @@ function PantallaAnalisis() {
                                 className="acordeon-lectura-header" 
                                 onClick={() => toggleSeccion('ejes')}
                             >
-                                <h2 className="acordeon-lectura-titulo">Ejes de Clasificación Teórica</h2>
+                                <h2 className="acordeon-lectura-titulo">I. Marco Conceptual (Sustrato Filosófico y Eje Psicológico)</h2>
                                 <span className="acordeon-lectura-icono">
                                     {seccionesAbiertas.ejes ? '−' : '+'}
                                 </span>
@@ -161,7 +162,7 @@ function PantallaAnalisis() {
                                     className="acordeon-lectura-header" 
                                     onClick={() => toggleSeccion('teoria')}
                                 >
-                                    <h2 className="acordeon-lectura-titulo">I. Enfoque de Teoría Literaria</h2>
+                                    <h2 className="acordeon-lectura-titulo">II. Introducción Teórica y Enfoque Crítico</h2>
                                     <span className="acordeon-lectura-icono">
                                         {seccionesAbiertas.teoria ? '−' : '+'}
                                     </span>
@@ -183,7 +184,7 @@ function PantallaAnalisis() {
                                     className="acordeon-lectura-header" 
                                     onClick={() => toggleSeccion('sensaciones')}
                                 >
-                                    <h2 className="acordeon-lectura-titulo">II. Arquitectura Sensorial y Mapa de Sensaciones</h2>
+                                    <h2 className="acordeon-lectura-titulo">III.. Arquitectura Sensorial y Mapa de Sensaciones</h2>
                                     <span className="acordeon-lectura-icono">
                                         {seccionesAbiertas.sensaciones ? '−' : '+'}
                                     </span>
@@ -192,6 +193,27 @@ function PantallaAnalisis() {
                                 {seccionesAbiertas.sensaciones && (
                                     <div className="acordeon-lectura-contenido">
                                         {parseMarkdownText(analisis.mapaSensaciones)}
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                           {analisis.contextoHistorico && (
+                            <section className="acordeon-lectura-seccion">
+                                <button 
+                                    type="button" 
+                                    className="acordeon-lectura-header" 
+                                    onClick={() => toggleSeccion('contexto')}
+                                >
+                                    <h2 className="acordeon-lectura-titulo">IV.. Contexto Historico</h2>
+                                    <span className="acordeon-lectura-icono">
+                                        {seccionesAbiertas.contexto ? '−' : '+'}
+                                    </span>
+                                </button>
+
+                                {seccionesAbiertas.contexto && (
+                                    <div className="acordeon-lectura-contenido">
+                                        {parseMarkdownText(analisis.contextoHistorico)}
                                     </div>
                                 )}
                             </section>
