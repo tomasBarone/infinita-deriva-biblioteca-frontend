@@ -119,7 +119,7 @@ export const libroService = {
         formData.append('imagen', archivoImagen);
     }
 
-    const response = await api.put(`/libros/actualizar-con-foto/${id}`, formData, {
+    const response = await api.put(`/libros/actualizar/${id}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },

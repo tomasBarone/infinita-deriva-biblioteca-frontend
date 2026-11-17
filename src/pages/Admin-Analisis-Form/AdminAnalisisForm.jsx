@@ -14,7 +14,7 @@ function AdminAnalisisForm() {
         mapaSensaciones: ''
     });
 
-    // Control de acordeones abiertos (todos abiertos por defecto o puedes alternar)
+    // acordeones abiertos por defecto
     const [seccionesAbiertas, setSeccionesAbiertas] = useState({
         conceptual: true,
         introduccion: true,
