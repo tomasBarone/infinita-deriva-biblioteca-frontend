@@ -11,14 +11,16 @@ function AdminAnalisisForm() {
         introduccionTeorica: '',
         ejePsicologico: '',
         sustratoFilosofico: '',
-        mapaSensaciones: ''
+        mapaSensaciones: '',
+        contextoHistorico: ''
     });
 
     // acordeones abiertos por defecto
     const [seccionesAbiertas, setSeccionesAbiertas] = useState({
         conceptual: true,
         introduccion: true,
-        sensaciones: true
+        sensaciones: true,
+        contexto: true
     });
 
     const toggleSeccion = (seccion) => {
@@ -41,7 +43,8 @@ function AdminAnalisisForm() {
                         introduccionTeorica: data.introduccionTeorica || '',
                         ejePsicologico: data.ejePsicologico || '',
                         sustratoFilosofico: data.sustratoFilosofico || '',
-                        mapaSensaciones: data.mapaSensaciones || ''
+                        mapaSensaciones: data.mapaSensaciones || '',
+                        contextoHistorico: data.contextoHistorico  || ''
                     });
                     setEsEdicion(true);
                 }
@@ -70,7 +73,8 @@ function AdminAnalisisForm() {
             introduccionTeorica: formData.introduccionTeorica,
             ejePsicologico: formData.ejePsicologico,
             sustratoFilosofico: formData.sustratoFilosofico,
-            mapaSensaciones: formData.mapaSensaciones
+            mapaSensaciones: formData.mapaSensaciones,
+            contextoHistorico: formData.contextoHistorico
         };
 
         try {
@@ -88,7 +92,7 @@ function AdminAnalisisForm() {
         }
     };
 
-    if (cargando) return <div className="loading-analisis">Consultando anales críticos de la obra...</div>;
+    if (cargando) return <div className="loading-analisis">Consultando analisis de la obra...</div>;
 
     return (
         <div className="admin-analisis-container">
@@ -100,7 +104,7 @@ function AdminAnalisisForm() {
                         ← Volver al Archivo Central
                     </button>
                     <div>
-                        <p className="admin-analisis-eyebrow">ESTUDIO CRÍTICO DE LA OBRA — REF. #{id}</p>
+                        <p className="admin-analisis-eyebrow">UNA APROXIMACION DE LA OBRA — REF. #{id}</p>
                         <h1 className="admin-analisis-title">
                             {esEdicion ? 'Edición de Análisis Literario' : 'Redacción de Nuevo Análisis'}
                         </h1>
@@ -215,6 +219,35 @@ function AdminAnalisisForm() {
                                         onChange={handleChange}
                                         rows="7"
                                         placeholder="Describa el viaje atmosférico, estilístico o la evolución conceptual de los personajes..."
+                                        required
+                                        className="form-textarea-clasico"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                     {/* ACORDEON 4: CONTEXTO HISTORICO*/}
+                     <div className="acordeon-seccion">
+                        <button 
+                            type="button" 
+                            className="acordeon-header" 
+                            onClick={() => toggleSeccion('contexto')}
+                        >
+                            <h3 className="acordeon-titulo">IV. Contexto Historico</h3>
+                            <span className="acordeon-icono">{seccionesAbiertas.contexto ? '−' : '+'}</span>
+                        </button>
+
+                        {seccionesAbiertas.contexto && (
+                            <div className="acordeon-contenido">
+                                <div className="form-field-group">
+                                    <textarea
+                                        id="contextoHistorico"
+                                        name="contextoHistorico"
+                                        value={formData.contextoHistorico}
+                                        onChange={handleChange}
+                                        rows="12"
+                                        placeholder="Contexto historico para situarse en la obra"
                                         required
                                         className="form-textarea-clasico"
                                     ></textarea>
