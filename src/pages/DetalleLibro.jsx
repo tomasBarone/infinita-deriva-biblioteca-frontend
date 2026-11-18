@@ -1,35 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import libroService from '../services/libroService';
+import analisisService from '../services/analisisService';
 import BotonGuardarLectura from '../components/Guardar/BotonGuardarLectura';
 
 const DetalleLibro = () => {
     const { id } = useParams(); 
     const navigate = useNavigate();
+    
     const [libro, setLibro] = useState(null);
+    const [contextoHistorico, setContextoHistorico] = useState(null);
+    const [acordeonContextoAbierto, setAcordeonContextoAbierto] = useState(false);
+    
     const [cargando, setCargando] = useState(true);
     const [errorImagen, setErrorImagen] = useState(false);
-
-    
     const [ultimoReservado, setUltimoReservado] = useState(null);
 
     useEffect(() => {
-        const obtenerDatosLibro = async () => {
+        const obtenerDatosCompletos = async () => {
             setCargando(true);
             try {
-                const data = await libroService.obtenerPorId(id); 
-                setLibro(data);
+                
+                const [dataLibro, dataAnalisis] = await Promise.all([
+                    libroService.obtenerPorId(id),
+                    analisisService.obtenerPorLibroId(id).catch(() => null)
+                ]);
+
+                setLibro(dataLibro);
                 setErrorImagen(false);
+
+                if (dataAnalisis && dataAnalisis.contextoHistorico) {
+                    setContextoHistorico(dataAnalisis.contextoHistorico);
+                } else {
+                    setContextoHistorico(null);
+                }
             } catch (error) {
                 console.error("Error al cargar el detalle del libro:", error);
             } finally {
                 setCargando(false);
             }
         };
-        obtenerDatosLibro();
+
+        obtenerDatosCompletos();
     }, [id]);
 
-   
     const agregarAReservasLocales = (libroObjeto) => {
         const reservasActuales = JSON.parse(localStorage.getItem('reservas_pendientes')) || [];
         const existeIndex = reservasActuales.findIndex(item => item.libro.id === libroObjeto.id);
@@ -52,16 +66,16 @@ const DetalleLibro = () => {
 
     if (cargando) {
         return (
-            <div style={{ padding: '60px', textAlign: 'center', background: '#fcfaf2', minHeight: '100vh', fontFamily: 'serif' }}>
-                Cargando obra...
+            <div style={{ padding: '80px', textAlign: 'center', background: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', color: '#544f46' }}>
+                Consultando cédula de archivo...
             </div>
         );
     }
 
     if (!libro) {
         return (
-            <div style={{ padding: '60px', textAlign: 'center', background: '#fcfaf2', minHeight: '100vh', fontFamily: 'serif' }}>
-                Obra no encontrada.
+            <div style={{ padding: '80px', textAlign: 'center', background: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', color: '#544f46' }}>
+                Obra no encontrada en el acervo.
             </div>
         );
     }
@@ -70,9 +84,9 @@ const DetalleLibro = () => {
     const tieneStock = libro.ejemplares > 0;
 
     return (
-        <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', margin: 0, position: 'relative' }}>
+        <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', margin: 0, position: 'relative', paddingBottom: '90px' }}>
             
-            {/* MINI POPUP FLOTANTE (CONFIRMACIÓN DE RESERVA) */}
+         
             {ultimoReservado && (
                 <div style={popupOverlayStyle}>
                     <div style={popupCardStyle}>
@@ -120,208 +134,284 @@ const DetalleLibro = () => {
                 </div>
             )}
 
-            {/* HERO BLACK HEADER (Estilo unificado con Corrientes Literarias) */}
-            <div style={{ backgroundColor: '#0f0e0c', color: '#fcfaf2', padding: '60px 10%' }}>
-                <Link to="/catalogo" style={{ color: '#a8a297', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'inline-block', marginBottom: '20px' }}>
+            {/* CABECERA NEGRA INSTITUCIONAL */}
+            <div style={{ backgroundColor: '#0f0e0c', color: '#fcfaf2', padding: '55px 10%' }}>
+                <Link to="/catalogo" style={{ color: '#a8a297', textDecoration: 'none', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'inline-block', marginBottom: '18px', fontFamily: 'system-ui' }}>
                     ← Catálogo
                 </Link>
                 
-                <p style={{ color: '#a8a297', fontSize: '0.9rem', margin: '0 0 8px 0', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                <p style={{ color: '#a8a297', fontSize: '0.85rem', margin: '0 0 8px 0', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'system-ui' }}>
                     {libro.corrienteNombre || 'LITERATURA UNIVERSAL'} {libro.anioPublicacion ? `· ${libro.anioPublicacion}` : ''}
                 </p>
                 
-                <h1 style={{ fontSize: '3.8rem', fontWeight: '400', margin: '0 0 16px 0', fontFamily: 'serif', lineHeight: '1.1' }}>
+                <h1 style={{ fontSize: '3.4rem', fontWeight: '400', margin: '0 0 12px 0', fontFamily: '"Playfair Display", Georgia, serif', lineHeight: '1.15' }}>
                     {libro.titulo}
                 </h1>
                 
-                <p style={{ color: '#e5dec9', fontSize: '1.3rem', fontStyle: 'italic', margin: 0, maxWidth: '700px', fontWeight: '300' }}>
+                <p style={{ color: '#e5dec9', fontSize: '1.25rem', fontStyle: 'italic', margin: 0, maxWidth: '700px', fontWeight: '300' }}>
                     {libro.autor}
                 </p>
             </div>
 
-            {/* CUERPO PRINCIPAL DEL DETALLE */}
-            <div style={{ padding: '60px 10%' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, 380px) 1fr', gap: '60px', alignItems: 'start' }}>
-                    
-                    {/* PORTADA FÍSICA 3D */}
-                    <div style={{ 
-                        position: 'relative',
-                        height: '520px', 
-                        borderRadius: '3px 6px 6px 3px', 
-                        boxShadow: '4px 4px 0px #1a1917, 12px 20px 35px rgba(44, 24, 16, 0.25)',
-                        overflow: 'hidden',
-                        backgroundColor: '#44403c'
-                    }}>
-                        {mostrarImagenReal ? (
-                            <img 
-                                src={libro.imagenUrl} 
-                                alt={`Portada de ${libro.titulo}`}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                onError={() => setErrorImagen(true)}
-                            />
-                        ) : (
-                            <div style={{
-                                background: 'linear-gradient(135deg, #44403c 0%, #292524 100%)',
-                                width: '100%',
-                                height: '100%',
-                                padding: '40px 30px',
-                                boxSizing: 'border-box',
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                justifyContent: 'space-between'
-                            }}>
-                                <div>
-                                    <span style={{ color: '#fcfaf2', fontSize: '0.85rem', opacity: 0.6, fontWeight: 'bold', display: 'block', marginBottom: '10px', fontFamily: 'system-ui' }}>
-                                        {libro.anioPublicacion}
-                                    </span>
-                                    <h2 style={{ color: '#fcfaf2', fontSize: '2.2rem', margin: 0, fontWeight: '400', lineHeight: '1.2' }}>
-                                        {libro.titulo}
-                                    </h2>
-                                </div>
-                                <span style={{ color: '#fcfaf2', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.8, fontWeight: 'bold', fontFamily: 'system-ui' }}>
-                                    {libro.autor}
+            {/* 1. VITRINA CENTRAL */}
+            <div style={{
+                backgroundColor: '#efefec',
+                padding: '65px 20px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderBottom: '1px solid #e2dfd7'
+            }}>
+                <div style={{
+                    width: '320px',
+                    height: '460px',
+                    boxShadow: '0 20px 45px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                    backgroundColor: '#292524'
+                }}>
+                    {mostrarImagenReal ? (
+                        <img 
+                            src={libro.imagenUrl} 
+                            alt={`Portada de ${libro.titulo}`}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            onError={() => setErrorImagen(true)}
+                        />
+                    ) : (
+                        <div style={{
+                            background: 'linear-gradient(135deg, #3c3834 0%, #1f1d1b 100%)',
+                            width: '100%',
+                            height: '100%',
+                            padding: '35px 28px',
+                            boxSizing: 'border-box',
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            justifyContent: 'space-between'
+                        }}>
+                            <div>
+                                <span style={{ color: '#fcfaf2', fontSize: '0.8rem', opacity: 0.6, display: 'block', marginBottom: '10px', fontFamily: 'system-ui' }}>
+                                    {libro.anioPublicacion}
                                 </span>
+                                <h2 style={{ color: '#fcfaf2', fontSize: '1.9rem', margin: 0, fontWeight: '400', lineHeight: '1.2' }}>
+                                    {libro.titulo}
+                                </h2>
+                            </div>
+                            <span style={{ color: '#fcfaf2', fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.8, fontFamily: 'system-ui' }}>
+                                {libro.autor}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* 2. COLUMNA CENTRAL DE LECTURA Y CÉDULA CURATORIAL */}
+            <div style={{ maxWidth: '760px', margin: '0 auto', padding: '65px 24px 0 24px' }}>
+                
+                {/* TÍTULO DE SECCIÓN */}
+                <h2 style={{
+                    fontSize: '2.2rem',
+                    fontWeight: '400',
+                    color: '#1a1917',
+                    margin: '0 0 8px 0',
+                    fontFamily: '"Playfair Display", Georgia, serif'
+                }}>
+                   Una Aproximación
+                </h2>
+
+                <p style={{
+                    fontSize: '0.9rem',
+                    color: '#70695d',
+                    margin: '0 0 28px 0',
+                    fontFamily: 'system-ui, sans-serif'
+                }}>
+                    {libro.autor} {libro.anioPublicacion ? `(${libro.anioPublicacion})` : ''}
+                </p>
+
+                {/* SINOPSIS */}
+                <p style={{
+                    fontSize: '1.08rem',
+                    lineHeight: '1.8',
+                    color: '#2c2925',
+                    marginBottom: '45px',
+                    whiteSpace: 'pre-line'
+                }}>
+                    {libro.sinopsis && libro.sinopsis.length > 5 
+                        ? libro.sinopsis 
+                        : 'Sin descripción disponible para esta edición en el acervo actual.'}
+                </p>
+
+                {/* RECURSO ACADÉMICO  */}
+                <div style={{
+                    backgroundColor: '#f3efe4',
+                    borderLeft: '3px solid #5c3a21',
+                    padding: '18px 24px',
+                    marginBottom: '45px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '20px',
+                    flexWrap: 'wrap'
+                }}>
+                    <div>
+                        <span style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#70695d', fontWeight: '700', display: 'block', fontFamily: 'system-ui' }}>
+                            RECURSO ACADÉMICO
+                        </span>
+                        <span style={{ fontSize: '1.02rem', fontWeight: '500', color: '#1a1917', display: 'block', marginTop: '3px' }}>
+                            Análisis filosófico, estructura y guía de lectura
+                        </span>
+                    </div>
+                    <button 
+                        onClick={() => navigate(`/libro/${libro.id}/analisis`)}
+                        style={{
+                            backgroundColor: '#5c3a21',
+                            color: '#fcfaf2',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '2px',
+                            fontSize: '0.78rem',
+                            fontWeight: '600',
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            fontFamily: 'system-ui'
+                        }}
+                    >
+                        Ver Análisis
+                    </button>
+                </div>
+
+                {/* 3. FICHA TÉCNICA  */}
+                <div style={{ borderTop: '1px solid #dfd9c8', marginBottom: '45px', fontFamily: 'system-ui, sans-serif' }}>
+                    <FilaMetadato etiqueta="Autor" valor={libro.autor} />
+                    <FilaMetadato etiqueta="Corriente Literaria" valor={libro.corrienteNombre || 'Literatura Universal'} />
+                    <FilaMetadato etiqueta="Género" valor={libro.generoNombre || '-'} />
+                    <FilaMetadato etiqueta="Subgénero" valor={libro.subgeneroNombre || '-'} />
+                    <FilaMetadato etiqueta="Año de Publicación" valor={libro.anioPublicacion || '-'} />
+                    <FilaMetadato etiqueta="ISBN" valor={libro.isbn || '-'} />
+                    <FilaMetadato 
+                        etiqueta="Registro de Archivo" 
+                        valor={`REF: ID-${libro.id}${libro.isbn ? ` · ISBN ${libro.isbn}` : ''}`} 
+                    />
+                    <FilaMetadato 
+                        etiqueta="Disponibilidad" 
+                        valor={
+                            <span style={{ color: tieneStock ? '#2e7d32' : '#c62828', fontWeight: '600' }}>
+                                {tieneStock 
+                                    ? `Disponible (${libro.ejemplares} ${libro.ejemplares === 1 ? 'unidad' : 'unidades'})` 
+                                    : 'Ejemplares agotados'}
+                            </span>
+                        } 
+                    />
+                </div>
+
+                {/* 4. BOTONES DE ACCIÓN (RESERVA Y GUARDADO) */}
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '60px' }}>
+                    <button
+                        disabled={!tieneStock}
+                        onClick={handleAgregarAReservas}
+                        style={{
+                            backgroundColor: tieneStock ? '#5c3a21' : '#a39e93',
+                            color: '#fcfaf2',
+                            border: 'none',
+                            padding: '14px 28px',
+                            borderRadius: '2px',
+                            fontSize: '0.82rem',
+                            fontWeight: '600',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
+                            cursor: tieneStock ? 'pointer' : 'not-allowed',
+                            fontFamily: 'system-ui'
+                        }}
+                    >
+                        Reservar Ejemplar
+                    </button>
+
+                    <BotonGuardarLectura libroId={libro.id} variante="texto" />
+                </div>
+
+                {/* 5. ACORDEÓN DE CONTEXTO HISTÓRICO (CERRADO POR DEFECTO) */}
+                {contextoHistorico && (
+                    <div style={{ borderTop: '1px solid #d4cebd', borderBottom: '1px solid #d4cebd' }}>
+                        <button
+                            type="button"
+                            onClick={() => setAcordeonContextoAbierto(!acordeonContextoAbierto)}
+                            style={{
+                                width: '100%',
+                                background: 'transparent',
+                                border: 'none',
+                                padding: '22px 4px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontFamily: 'system-ui, sans-serif'
+                            }}
+                        >
+                            <span style={{
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                letterSpacing: '0.16em',
+                                textTransform: 'uppercase',
+                                color: '#2c1810'
+                            }}>
+                                Contexto Histórico
+                            </span>
+                            <span style={{
+                                fontSize: '1.3rem',
+                                fontWeight: '300',
+                                color: '#5c3a21',
+                                lineHeight: 1
+                            }}>
+                                {acordeonContextoAbierto ? '−' : '+'}
+                            </span>
+                        </button>
+
+                        {acordeonContextoAbierto && (
+                            <div style={{
+                                padding: '4px 4px 28px 4px',
+                                fontSize: '1.02rem',
+                                lineHeight: '1.8',
+                                color: '#2c2925',
+                                fontFamily: '"Playfair Display", Georgia, serif',
+                                whiteSpace: 'pre-line'
+                            }}>
+                                {contextoHistorico}
                             </div>
                         )}
                     </div>
+                )}
 
-                    {/* COLUMNA DETALLES Y ACCIONES */}
-                    <div style={{ padding: '10px 0' }}>
-                        
-                        <p style={{ fontSize: '1.1rem', lineHeight: '1.7', color: '#1a1917', marginBottom: '35px', maxWidth: '650px' }}>
-                            {libro.sinopsis && libro.sinopsis.length > 5 ? libro.sinopsis : 'Sin descripción disponible para esta edición en el acervo actual.'}
-                        </p>
-
-                        {/* BLOQUE RECURSO ACADÉMICO / ANÁLISIS */}
-                        <div style={{
-                            backgroundColor: '#efebe0',
-                            borderLeft: '4px solid #5c3a21',
-                            padding: '18px 22px',
-                            borderRadius: '4px',
-                            marginBottom: '35px',
-                            maxWidth: '650px'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px' }}>
-                                <div>
-                                    <span style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#70695d', fontWeight: 'bold', display: 'block', fontFamily: 'system-ui' }}>
-                                        RECURSO ACADÉMICO
-                                    </span>
-                                    <span style={{ fontSize: '1rem', fontWeight: '600', color: '#1a1917', display: 'block', marginTop: '2px' }}>
-                                        Análisis filosófico, estructura y guía de lectura
-                                    </span>
-                                </div>
-                                <button 
-                                    onClick={() => navigate(`/libro/${libro.id}/analisis`)}
-                                    style={{
-                                        backgroundColor: '#5c3a21',
-                                        color: '#fcfaf2',
-                                        border: 'none',
-                                        padding: '10px 18px',
-                                        borderRadius: '20px',
-                                        fontSize: '0.8rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        whiteSpace: 'nowrap',
-                                        fontFamily: 'system-ui'
-                                    }}
-                                >
-                                    Ver Análisis
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* METADATOS TÉCNICOS */}
-                        <div style={{ borderTop: '1px solid #e5dec9', borderBottom: '1px solid #e5dec9', padding: '15px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px', fontFamily: 'system-ui', maxWidth: '650px' }}>
-                            <div>
-                                <span style={{ fontSize: '0.7rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#70695d', display: 'block', marginBottom: '4px' }}>Género</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{libro.generoNombre || '-'}</span>
-                            </div>
-                            <div>
-                                <span style={{ fontSize: '0.7rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#70695d', display: 'block', marginBottom: '4px' }}>Subgénero</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{libro.subgeneroNombre || '-'}</span>
-                            </div>
-                            <div>
-                                <span style={{ fontSize: '0.7rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#70695d', display: 'block', marginBottom: '4px' }}>Año</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{libro.anioPublicacion || '-'}</span>
-                            </div>
-                            <div>
-                                <span style={{ fontSize: '0.7rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: '#70695d', display: 'block', marginBottom: '4px' }}>ISBN</span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{libro.isbn || '-'}</span>
-                            </div>
-                        </div>
-
-                        {/* REGISTRO DE ARCHIVO Y DISPONIBILIDAD */}
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            borderBottom: '1px solid #e5dec9',
-                            padding: '16px 0',
-                            marginBottom: '35px',
-                            fontFamily: 'system-ui',
-                            maxWidth: '650px'
-                        }}>
-                            <div>
-                                <span style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#70695d', display: 'block', marginBottom: '2px' }}>
-                                    Registro de Archivo
-                                </span>
-                                <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1a1917' }}>
-                                    REF: ID-{libro.id} {libro.isbn ? `· ISBN ${libro.isbn}` : ''}
-                                </span>
-                            </div>
-
-                            <span style={{
-                                fontSize: '0.8rem',
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase',
-                                color: tieneStock ? '#2e7d32' : '#c62828',
-                                fontWeight: 'bold'
-                            }}>
-                                {tieneStock ? `✓ DISPONIBLE (${libro.ejemplares} ${libro.ejemplares === 1 ? 'UNIDAD' : 'UNIDADES'})` : '✕ EJEMPLARES AGOTADOS'}
-                            </span>
-                        </div>
-
-                        {/* BOTONES DE ACCIÓN */}
-                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            <button
-                                disabled={!tieneStock}
-                                onClick={handleAgregarAReservas}
-                                style={{
-                                    backgroundColor: tieneStock ? '#5c3a21' : '#a39e93',
-                                    color: '#fcfaf2',
-                                    border: 'none',
-                                    padding: '14px 28px',
-                                    borderRadius: '30px',
-                                    fontSize: '0.9rem',
-                                    fontWeight: '600',
-                                    letterSpacing: '0.05em',
-                                    textTransform: 'uppercase',
-                                    cursor: tieneStock ? 'pointer' : 'not-allowed',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    fontFamily: 'system-ui'
-                                }}
-                            >
-                                Reservar Ejemplar
-                            </button>
-
-                            <BotonGuardarLectura libroId={libro.id} variante="texto" />
-                        </div>
-
-                    </div>
-                </div>
             </div>
         </div>
     );
 };
 
+/* Componente auxiliar para cada fila de la cédula técnica */
+const FilaMetadato = ({ etiqueta, valor }) => (
+    <div style={{
+        display: 'grid',
+        gridTemplateColumns: '190px 1fr',
+        gap: '16px',
+        padding: '14px 0',
+        borderBottom: '1px solid #dfd9c8',
+        fontSize: '0.9rem',
+        alignItems: 'baseline'
+    }}>
+        <span style={{ color: '#70695d', fontWeight: '500' }}>
+            {etiqueta}
+        </span>
+        <span style={{ color: '#1a1917' }}>
+            {valor}
+        </span>
+    </div>
+);
+
 const popupOverlayStyle = {
     position: 'fixed',
     top: '75px',
     right: '40px',
-    zIndex: 2500,
-    animation: 'fadeIn 0.2s ease-out'
+    zIndex: 2500
 };
 
 const popupCardStyle = {
