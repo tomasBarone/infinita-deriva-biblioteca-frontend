@@ -44,12 +44,14 @@ const DetalleLibro = () => {
         obtenerDatosCompletos();
     }, [id]);
 
-    const agregarAReservasLocales = (libroObjeto) => {
+   const agregarAReservasLocales = (libroObjeto) => {
         const reservasActuales = JSON.parse(localStorage.getItem('reservas_pendientes')) || [];
         const existeIndex = reservasActuales.findIndex(item => item.libro.id === libroObjeto.id);
         
+        
         if (existeIndex >= 0) {
-            reservasActuales[existeIndex].cantidad += 1;
+         
+            reservasActuales[existeIndex].cantidad = 1; 
         } else {
             reservasActuales.push({ libro: libroObjeto, cantidad: 1 });
         }
