@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   gap: 22px;
-  z-index: 1000; /* Mantiene la barra activa e encendida por encima del backdrop */
+  z-index: 1000; 
   border-bottom: 1px solid #5c4a235d;
   
   padding-bottom: 10px;
@@ -109,6 +109,11 @@
   padding: 10px 2px;
   white-space: nowrap;
   transition: color 0.2s ease;
+
+}
+
+ .sesion {
+ margin-left: 120px;
 
 }
 
@@ -175,7 +180,7 @@
   animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* TRANSICIÓN FLUIDA DEL CONTENIDO AL NAVEGAR ENTRE PESTAÑAS */
+
 .fade-in-content {
   animation: fadeInContent 0.18s ease-in-out;
 }
@@ -195,19 +200,19 @@
   to { opacity: 1; }
 }
 
-/* CONTENIDO INTERNO Y TIPOGRAFÍA IMPONENTE HARVARD */
+
 .drawer-content-inner {
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
-.drawer-main-col h3 {
+.drawer-main-col {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.95rem; /* Título amplio e imponente */
+  font-size: 1.95rem; 
   font-weight: 400;
   color: #2c1810;
-  margin: 0 0 14px 0;
+  margin: 30px 20px 19px 120px;
   letter-spacing: -0.2px;
 }
 
@@ -230,15 +235,15 @@
 .drawer-links-grid a {
   position: relative;
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.35rem; 
+  font-size: 1.75rem; 
   font-weight: 400;
   color: #2c1810;
   text-decoration: none; 
-  padding-bottom: 3px;
+  padding-bottom: 7px;
   transition: color 0.15s ease;
 }
 
-/* Subrayado borgoña sutil solo en Hover */
+
 .drawer-links-grid a::after {
   content: '';
   position: absolute;
@@ -253,7 +258,7 @@
 }
 
 .drawer-links-grid a:hover::after {
-  transform: scaleX(1); /* Despliega el subrayado de izquierda a derecha */
+  transform: scaleX(1);
 }
 
 

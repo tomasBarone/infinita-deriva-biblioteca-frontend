@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
+import { crearOrden } from '../services/ordenService';
 
 
 const SolicitudReserva = () => {
@@ -34,15 +34,30 @@ const SolicitudReserva = () => {
         setModalidades(prev => ({ ...prev, [idLibro]: valor }));
     };
 
-    const handleEmitirSolicitud = (e) => {
+const handleEmitirSolicitud = async (e) => {
         e.preventDefault();
         if (reservas.length === 0) return;
 
-       
-        alert("¡Solicitud de consulta emitida con éxito al Archivo Central!");
-        localStorage.removeItem('reservas_pendientes');
-        window.dispatchEvent(new Event('reservas_updated'));
-        navigate('/catalogo');
+        try {
+            const payload = reservas.map(item => ({
+                libroId: item.libro.id,
+                cantidad: item.cantidad || 1
+            }));
+            const emailUsuario = localStorage.getItem('email') || '';
+
+            await crearOrden(payload, emailUsuario);
+
+            localStorage.removeItem('reservas_pendientes');
+            window.dispatchEvent(new Event('reservas_updated'));
+            alert("¡Solicitud de consulta emitida con éxito al Archivo Central!");
+            navigate('/catalogo');
+        } catch (error) {
+            console.error("Error al emitir solicitud:", error);
+            alert(
+                error.response?.data?.message ||
+                "No se pudo registrar la solicitud. Verificá la disponibilidad de ejemplares."
+            );
+        }
     };
 
     const fechaActual = new Date();
@@ -54,7 +69,7 @@ const SolicitudReserva = () => {
             <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', padding: '80px 10%', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '2.5rem', fontWeight: '400', color: '#1a1917', marginBottom: '15px' }}>Boletín de Solicitud de Consulta</h1>
                 <p style={{ color: '#70695d', fontSize: '1.05rem', marginBottom: '30px', fontFamily: 'system-ui' }}>No hay obras seleccionadas en el registro de archivo actual.</p>
-                <Link to="/catalogo" style={{ backgroundColor: '#5c3a21', color: '#fcfaf2', padding: '12px 26px', textDecoration: 'none', borderRadius: '2px', fontSize: '0.8rem', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'system-ui' }}>
+                <Link to="/libros" style={{ backgroundColor: '#5c3a21', color: '#fcfaf2', padding: '12px 26px', textDecoration: 'none', borderRadius: '2px', fontSize: '0.8rem', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'system-ui' }}>
                     Explorar Catálogo
                 </Link>
             </div>

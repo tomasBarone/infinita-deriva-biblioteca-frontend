@@ -133,7 +133,7 @@ function Navbar({ onToggleMenu }) {
 
                     <div className="dropdown-drawer-panel">
                         {menuAbierto === 'salas' && (
-                            <div className="drawer-content-inner fade-in-content">
+                            <div className="drawer-content-inner-general fade-in-content">
                                 <div className="drawer-main-col">
                                    
                                     <div className="drawer-links-grid">
@@ -184,7 +184,7 @@ function Navbar({ onToggleMenu }) {
 
                                 {/* Acción de cierre de sesión */}
                                 <div>
-                                    <button type="button" onClick={handleLogout} className="nav-text-btn">
+                                    <button type="button" onClick={handleLogout} className="nav-text-btn sesion">
                                         CERRAR SESIÓN ACTIVA →
                                     </button>
                                 </div>
