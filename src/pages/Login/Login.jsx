@@ -15,7 +15,7 @@ function Login() {
 
     const isLoggedIn = !!user;
 
-    // Evaluamos si el usuario actual es Administrador
+   
     const esAdmin = Boolean(
         user?.roles?.includes('ROLE_ADMIN') || 
         user?.role === 'ROLE_ADMIN' ||
@@ -33,7 +33,24 @@ function Login() {
 
             if (token) {
                 iniciarSesion(token);
-                // Si es admin va al panel de control, sino a su biblioteca personal
+
+           
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join('')));
+                    
+                    const nombreExtraido = jsonPayload.sub || jsonPayload.username || username;
+                    localStorage.setItem('nombreUsuario', nombreExtraido);
+                    if (jsonPayload.id) {
+                        localStorage.setItem('userId', jsonPayload.id);
+                    }
+                } catch (err) {
+                    localStorage.setItem('nombreUsuario', username);
+                }
+               
                 navigate(esAdmin ? '/admin' : '/biblioteca');
             } else {
                 setError('No se recibió un token válido del servidor.');
@@ -50,6 +67,7 @@ function Login() {
         cerrarSesion();
         setUsername('');
         setPassword('');
+        localStorage.removeItem('nombreUsuario');
         navigate('/login');
     };
 
@@ -58,23 +76,29 @@ function Login() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            minHeight: '75vh',
-            padding: '20px'
+            minHeight: '85vh',
+            padding: '40px 20px',
+            
+            backgroundImage: `linear-gradient(rgba(15, 14, 12, 0.65), rgba(15, 14, 12, 0.75)), url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1920&q=80')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
         }}>
             {isLoggedIn ? (
                 <div style={{
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                    backdropFilter: 'blur(8px)',
                     border: '1px solid #e2dacb',
-                    padding: '40px',
-                    borderRadius: '4px',
+                    padding: '45px 40px',
+                    borderRadius: '2px',
                     width: '100%',
-                    maxWidth: '400px',
-                    boxShadow: '0 4px 20px rgba(44, 24, 16, 0.02)',
+                    maxWidth: '420px',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
                     textAlign: 'center'
                 }}>
                     <h2 style={{
                         fontFamily: '"Playfair Display", serif',
-                        fontSize: '1.8rem',
+                        fontSize: '1.9rem',
                         color: '#2c1810',
                         marginBottom: '16px',
                         fontWeight: '400'
@@ -89,27 +113,27 @@ function Login() {
                         marginBottom: '32px',
                         lineHeight: '1.5'
                     }}>
-                        Actualmente te encontrás autenticado como <strong>{user?.sub || user?.username}</strong>.
+                        Actualmente te encontrás autenticado como <strong>{localStorage.getItem('nombreUsuario') || user?.sub || user?.username}</strong>.
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* BOTÓN DINÁMICO SEGÚN ROL */}
+                        
                         {esAdmin ? (
                             <button 
                                 onClick={() => navigate('/admin')}
                                 style={{
                                     width: '100%',
-                                    padding: '12px',
+                                    padding: '13px',
                                     backgroundColor: '#2c1810',
                                     color: '#fdfbf7',
                                     border: 'none',
-                                    borderRadius: '4px',
+                                    borderRadius: '2px',
                                     fontFamily: 'system-ui, sans-serif',
                                     fontWeight: '600',
                                     letterSpacing: '1px',
                                     cursor: 'pointer',
                                     textTransform: 'uppercase',
-                                    fontSize: '0.85rem'
+                                    fontSize: '0.82rem'
                                 }}
                             >
                                 Ir al Panel de Control
@@ -119,17 +143,17 @@ function Login() {
                                 onClick={() => navigate('/biblioteca')}
                                 style={{
                                     width: '100%',
-                                    padding: '12px',
+                                    padding: '13px',
                                     backgroundColor: '#2c1810',
                                     color: '#fdfbf7',
                                     border: 'none',
-                                    borderRadius: '4px',
+                                    borderRadius: '2px',
                                     fontFamily: 'system-ui, sans-serif',
                                     fontWeight: '600',
                                     letterSpacing: '1px',
                                     cursor: 'pointer',
                                     textTransform: 'uppercase',
-                                    fontSize: '0.85rem'
+                                    fontSize: '0.82rem'
                                 }}
                             >
                                 Ir a Mis Lecturas
@@ -140,17 +164,17 @@ function Login() {
                             onClick={handleLogout}
                             style={{
                                 width: '100%',
-                                padding: '12px',
-                                backgroundColor: '#fdfbf7',
-                                color: '#ef4444',
-                                border: '1px solid #ef4444',
-                                borderRadius: '4px',
+                                padding: '13px',
+                                backgroundColor: 'transparent',
+                                color: '#a93226',
+                                border: '1px solid #a93226',
+                                borderRadius: '2px',
                                 fontFamily: 'system-ui, sans-serif',
                                 fontWeight: '600',
                                 letterSpacing: '1px',
                                 cursor: 'pointer',
                                 textTransform: 'uppercase',
-                                fontSize: '0.85rem'
+                                fontSize: '0.82rem'
                             }}
                         >
                             Cerrar Sesión
@@ -162,13 +186,14 @@ function Login() {
                     onSubmit={handleSubmit} 
                     autoComplete="off"
                     style={{
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                        backdropFilter: 'blur(8px)',
                         border: '1px solid #e2dacb',
-                        padding: '40px',
-                        borderRadius: '4px',
+                        padding: '45px 40px',
+                        borderRadius: '2px',
                         width: '100%',
-                        maxWidth: '400px',
-                        boxShadow: '0 4px 20px rgba(44, 24, 16, 0.02)'
+                        maxWidth: '420px',
+                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
                     }}
                 >
                     <input type="text" name="prevent_autofill" style={{ display: 'none' }} tabIndex={-1} />
@@ -176,7 +201,7 @@ function Login() {
 
                     <h2 style={{
                         fontFamily: '"Playfair Display", serif',
-                        fontSize: '1.8rem',
+                        fontSize: '1.9rem',
                         color: '#2c1810',
                         marginBottom: '24px',
                         textAlign: 'center',
@@ -188,11 +213,11 @@ function Login() {
                     {error && (
                         <div style={{
                             backgroundColor: '#fde8ec',
-                            color: '#ef4444',
-                            padding: '10px',
-                            borderRadius: '4px',
+                            color: '#a93226',
+                            padding: '12px',
+                            borderRadius: '2px',
                             fontSize: '0.85rem',
-                            marginBottom: '16px',
+                            marginBottom: '20px',
                             fontFamily: 'system-ui, sans-serif'
                         }}>
                             ⚠️ {error}
@@ -240,17 +265,17 @@ function Login() {
                         disabled={cargando}
                         style={{
                             width: '100%',
-                            padding: '12px',
+                            padding: '13px',
                             backgroundColor: '#2c1810',
                             color: '#fdfbf7',
                             border: 'none',
-                            borderRadius: '4px',
+                            borderRadius: '2px',
                             fontFamily: 'system-ui, sans-serif',
                             fontWeight: '600',
                             letterSpacing: '1px',
                             cursor: 'pointer',
                             textTransform: 'uppercase',
-                            fontSize: '0.85rem',
+                            fontSize: '0.82rem',
                             opacity: cargando ? 0.7 : 1,
                             marginTop: '8px'
                         }}
@@ -260,9 +285,9 @@ function Login() {
 
                     {/* ACCESO DIRECTO A REGISTRO */}
                     <div style={{
-                        marginTop: '24px',
-                        paddingTop: '16px',
-                        borderTop: '1px solid #f0eafe',
+                        marginTop: '26px',
+                        paddingTop: '18px',
+                        borderTop: '1px solid #e8e2d5',
                         textAlign: 'center',
                         fontFamily: 'system-ui, sans-serif',
                         fontSize: '0.88rem',

@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; 
 import SearchOverlay from '../SearchOverlay/SearchOverlay';
-import UserMenuOverlay from '../UserMenu/UserMenuOverlay';
 import './Navbar.css';
 
 function Navbar({ onToggleMenu }) {
-    const { user } = useAuth();
+    const { user, cerrarSesion } = useAuth();
+    const navigate = useNavigate();
     const [searchOpen, setSearchOpen] = useState(false);
-    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [cantidadReservas, setCantidadReservas] = useState(0);
     
-    // Estado del menú activo
+    
     const [menuAbierto, setMenuAbierto] = useState(null);
     const navRef = useRef(null);
 
@@ -44,24 +43,39 @@ function Navbar({ onToggleMenu }) {
         setMenuAbierto(prev => (prev === menuName ? null : menuName));
     };
 
+    const handleLogout = () => {
+        cerrarSesion();
+        localStorage.removeItem('nombreUsuario');
+        setMenuAbierto(null);
+        navigate('/login');
+    };
+
+    const esAdmin = Boolean(
+        user?.roles?.includes('ROLE_ADMIN') || 
+        user?.role === 'ROLE_ADMIN' ||
+        user?.authorities?.some(a => a.authority === 'ROLE_ADMIN')
+    );
+
+    const nombreUsuario = localStorage.getItem('nombreUsuario') || user?.sub || user?.username || 'Lector';
+    const userIdFicha = user?.id || localStorage.getItem('userId') || '0042';
+
     return (
         <div ref={navRef} className="navbar-wrapper">
             <header className="navbar-header">
-                {/* IZQUIERDA: Menú de Corrientes (Intacto) */}
+               
                 <div onClick={onToggleMenu} className="navbar-menu-trigger">
                     <span className="navbar-menu-icon">☰</span>
-                    <span className="navbar-menu-text">MENÚ</span>
+                    <span className="navbar-menu-text">CORRIENTES LITERARIAS</span>
                 </div>
 
-                {/* CENTRO: Marca Editorial */}
+                
                 <Link to="/" className="navbar-logo-link" onClick={() => setMenuAbierto(null)}>
                     <h1 className="navbar-logo-title">Infinita Deriva</h1>
                     <h3 className="navbar-logo-subtitle">Una biblioteca para lectores curiosos</h3>
                 </Link>
 
-                {/* DERECHA: Opciones Institucionales */}
+                
                 <div className="navbar-utils-inline">
-                    
                     <div className="nav-dropdown-container">
                         <button 
                             type="button" 
@@ -95,13 +109,15 @@ function Navbar({ onToggleMenu }) {
                     <span className="nav-sep">|</span>
 
                     {user ? (
-                        <button 
-                            type="button"
-                            onClick={() => { setUserMenuOpen(true); setMenuAbierto(null); }} 
-                            className="nav-text-btn socio-trigger"
-                        >
-                            SOCIO: {user.sub || user.username} {cantidadReservas > 0 ? `(${cantidadReservas})` : ''} ▾
-                        </button>
+                        <div className="nav-dropdown-container">
+                            <button 
+                                type="button"
+                                className={`nav-text-btn socio-trigger ${menuAbierto === 'usuario' ? 'active' : ''}`}
+                                onClick={() => handleToggleMenu('usuario')}
+                            >
+                                SOCIO: {nombreUsuario} {cantidadReservas > 0 ? `(${cantidadReservas})` : ''} {menuAbierto === 'usuario' ? '∧' : '∨'}
+                            </button>
+                        </div>
                     ) : (
                         <Link to="/login" className="nav-text-btn socio-trigger" onClick={() => setMenuAbierto(null)}>
                             ACCESO SOCIO
@@ -110,18 +126,16 @@ function Navbar({ onToggleMenu }) {
                 </div>
             </header>
 
-            {/* --- TELÓN Y DRAWER PERMANENTE MIENTRAS HAYA UN MENÚ ABIERTO --- */}
+            
             {menuAbierto && (
                 <>
                     <div className="dropdown-overlay-backdrop" onClick={() => setMenuAbierto(null)} />
 
                     <div className="dropdown-drawer-panel">
-                        {/* El contenido intercambia dentro del mismo panel estático sin re-animar el contenedor */}
                         {menuAbierto === 'salas' && (
-                            <div className="drawer-content-inner fade-in-content">
+                            <div className="drawer-content-inner-general fade-in-content">
                                 <div className="drawer-main-col">
-                                    <h3>Salas de Lectura & Sede San Isidro</h3>
-                                    <p className="drawer-lead">Espacios silenciosos de estudio e investigación académica dotados de luz focal y consulta en sala.</p>
+                                   
                                     <div className="drawer-links-grid">
                                         <Link to="/salas/generales" onClick={() => setMenuAbierto(null)}>Salas Generales de Lectura</Link>
                                         <Link to="/salas/investigacion" onClick={() => setMenuAbierto(null)}>Mesas de Investigación Silenciosa</Link>
@@ -129,22 +143,51 @@ function Navbar({ onToggleMenu }) {
                                         <Link to="/salas/sede" onClick={() => setMenuAbierto(null)}>Horarios y Ubicación de Sede</Link>
                                     </div>
                                 </div>
-                               
                             </div>
                         )}
 
                         {menuAbierto === 'pase' && (
                             <div className="drawer-content-inner fade-in-content">
                                 <div className="drawer-main-col">
-                                    <h3>Pase Lector y Acreditación</h3>
-                                    <p className="drawer-lead">La credencial oficial que otorga derechos de préstamo domiciliario y reserva de puestos de estudio.</p>
+                                  
                                     <div className="drawer-links-grid">
                                         <Link to="/pase-lector" onClick={() => setMenuAbierto(null)}>¿Cómo obtener el Pase Lector?</Link>
                                         <Link to="/pase-lector/reglamento" onClick={() => setMenuAbierto(null)}>Reglamento de Préstamos (14 Días)</Link>
                                         <Link to="/pase-lector/manuscritos" onClick={() => setMenuAbierto(null)}>Acceso a Fondos y Manuscritos Raros</Link>
                                     </div>
                                 </div>
-                                
+                            </div>
+                        )}
+
+                        {menuAbierto === 'usuario' && (
+                            <div className="drawer-content-inner fade-in-content">
+                             
+                              
+
+                              
+                                <div className="drawer-main-col">
+                                   
+                                    <div className="drawer-links-grid">
+                                        <Link to="/reservas" onClick={() => setMenuAbierto(null)}>
+                                            Solicitudes de Préstamo {cantidadReservas > 0 ? `(${cantidadReservas})` : ''}
+                                        </Link>
+                                        <Link to="/biblioteca" onClick={() => setMenuAbierto(null)}>
+                                            Cuaderno de Lecturas
+                                        </Link>
+                                        {esAdmin && (
+                                            <Link to="/admin" onClick={() => setMenuAbierto(null)}>
+                                                Panel de Gestión Académica
+                                            </Link>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Acción de cierre de sesión */}
+                                <div>
+                                    <button type="button" onClick={handleLogout} className="nav-text-btn sesion">
+                                        CERRAR SESIÓN ACTIVA →
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -152,7 +195,6 @@ function Navbar({ onToggleMenu }) {
             )}
 
             <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-            <UserMenuOverlay isOpen={userMenuOpen} onClose={() => setUserMenuOpen(false)} />
         </div>
     );
 }

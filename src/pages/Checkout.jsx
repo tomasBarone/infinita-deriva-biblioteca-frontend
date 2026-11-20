@@ -1,252 +1,450 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { crearOrden } from '../services/ordenService'; 
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
-const Checkout = () => {
-    const location = useLocation();
+const PaseLector = () => {
     const navigate = useNavigate();
 
-    // 1. Recibimos tanto si viene de "Mis Reservas" (state.reservas) como si viene de "Solicitar Ahora" (state.libro)
-    const reservasState = location.state?.reservas;
-    const libroIndividual = location.state?.libro;
-    const cantidadIndividual = location.state?.cantidad || 1;
-
-    // Normalizamos los items a un formato común: [{ libro, cantidad }]
-    const itemsCheckout = reservasState 
-        ? reservasState 
-        : libroIndividual 
-            ? [{ libro: libroIndividual, cantidad: cantidadIndividual }] 
-            : [];
-
-    // Estado del formulario adaptado a la reserva
     const [formData, setFormData] = useState({
-        nombre: '',
+        nombreCompleto: '',
         email: '',
+        documento: '',
         direccion: '',
         ciudad: '',
         codigoPostal: '',
-        metodoRetiro: 'envio' // envío a domicilio o retiro en sala
+        sedePreferida: 'Sede Central - Sala de Estudio',
+        categoriaLector: 'Lector General',
+        aceptaReglamento: true
     });
 
-    const [procesando, setProcesando] = useState(false);
-
-    // Redirección de seguridad si entran sin seleccionar ninguna obra
-    if (itemsCheckout.length === 0) {
-        return (
-            <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', padding: '60px', textAlign: 'center', color: '#1a1917' }}>
-                <h2>No hay ningún ejemplar seleccionado para reservar.</h2>
-                <Link to="/catalogo" style={{ color: '#5c3a21', textDecoration: 'underline', marginTop: '20px', display: 'inline-block' }}>
-                    Volver al Catálogo de Obras
-                </Link>
-            </div>
-        );
-    }
-
-    const BASE_URL_BACKEND = 'http://localhost:8080';
-
-    // Cálculos económicos globales para todos los ítems del carrito
-    const costoGestionPorItem = 3500;
-    const subtotalGeneral = itemsCheckout.reduce((acc, item) => acc + (Number(item.libro.precio) || 0) * item.cantidad, 0);
-    const costoGestionTotal = itemsCheckout.length * costoGestionPorItem;
-    const totalGeneral = subtotalGeneral + costoGestionTotal;
+    const [enviando, setEnviando] = useState(false);
+    const [error, setError] = useState('');
+    const [solicitudEnviada, setSolicitudEnviada] = useState(false);
+    const [codigoReferencia, setCodigoReferencia] = useState('');
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setProcesando(true);
+        setEnviando(true);
+        setError('');
 
         try {
-            // Armamos el payload con todos los libros seleccionados para el backend
-            const payload = itemsCheckout.map(item => ({
-                libroId: item.libro.id,
-                cantidad: Number(item.cantidad)
-            }));
+            const response = await api.post('/pase-lector/solicitar', formData);
+            const referencia =
+                response?.data?.numeroReferencia ||
+                response?.data?.id ||
+                `SOL-${Date.now().toString().slice(-6)}`;
 
-            const ordenCreada = await crearOrden(payload, formData.email);
-
-            // Limpiamos las reservas pendientes del localStorage una vez procesada con éxito
-            localStorage.removeItem('reservas_pendientes');
-
-            alert(`¡Reserva confirmada con éxito! N° de Préstamo #${ordenCreada.id || 'confirmado'}. Se ha enviado el comprobante a tu correo.`);
-            
-            navigate('/catalogo');
-
-        } catch (error) {
-            console.error("Error al procesar la reserva:", error);
-            const mensajeError = error.response?.data?.message || 'Ocurrió un error al procesar la reserva de los ejemplares. Intentá nuevamente.';
-            alert(`Error: ${mensajeError}`);
-
+            setCodigoReferencia(referencia);
+            setSolicitudEnviada(true);
+        } catch (err) {
+            console.error('Error al remitir solicitud de Pase Lector:', err);
+            setError(
+                err.response?.data?.message ||
+                'No fue posible procesar la solicitud en este momento. Por favor, intente nuevamente.'
+            );
         } finally {
-            setProcesando(false);
+            setEnviando(false);
         }
     };
 
     return (
-        <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', padding: '40px 10%', color: '#1a1917' }}>
+        <div style={{ backgroundColor: '#fcfaf2', minHeight: '100vh', fontFamily: '"Playfair Display", Georgia, serif', color: '#1a1917', paddingBottom: '90px' }}>
             
-            {/* ENCABEZADO */}
-            <div style={{ marginBottom: '30px' }}>
-                <Link to="/reservas" style={{ color: '#70695d', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none' }}>
-                    ← VOLVER A MIS RESERVAS
+            {/* HERO CON IMAGEN DE FONDO INSTITUCIONAL */}
+            <div style={{
+                position: 'relative',
+                backgroundImage: `linear-gradient(rgba(15, 14, 12, 0.72), rgba(15, 14, 12, 0.85)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1920&q=80')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                color: '#fcfaf2',
+                padding: '65px 10%'
+            }}>
+                <Link
+                    to="/catalogo"
+                    style={{
+                        color: '#c8c0b0',
+                        fontSize: '0.8rem',
+                        letterSpacing: '0.14em',
+                        textTransform: 'uppercase',
+                        textDecoration: 'none',
+                        fontFamily: 'system-ui, sans-serif',
+                        display: 'inline-block',
+                        marginBottom: '18px'
+                    }}
+                >
+                    ← Volver al Catálogo
                 </Link>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: '400', margin: '15px 0 0 0' }}>Solicitud de Préstamo</h1>
-                <p style={{ color: '#70695d', fontSize: '0.95rem', margin: '5px 0 0 0', fontFamily: 'system-ui, sans-serif' }}>
-                    Reserva de ejemplares por un período de 14 días renovables
+
+                <p style={{
+                    color: '#d8cfb8',
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    margin: '0 0 10px 0',
+                    fontFamily: 'system-ui, sans-serif'
+                }}>
+                    ACREDITACIÓN Y MEMBRESÍA · ARCHIVO INFINITA DERIVA
+                </p>
+
+                <h1 style={{ fontSize: '3.2rem', fontWeight: '400', margin: '0 0 12px 0', lineHeight: '1.15' }}>
+                    Solicitud de Pase Lector
+                </h1>
+
+                <p style={{ color: '#e5dec9', fontSize: '1.05rem', margin: 0, maxWidth: '680px', fontFamily: 'system-ui, sans-serif', fontWeight: '300', lineHeight: '1.6' }}>
+                    Registrá tus datos de socio para habilitar préstamos domiciliarios por 14 días, reservas en sala de lectura y acceso a fondos especiales.
                 </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(320px, 400px)', gap: '50px', alignItems: 'start' }}>
-                
-                {/* FORMULARIO DE RESERVA */}
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                    
-                    <section style={{ backgroundColor: '#efebe0', padding: '25px', borderRadius: '4px' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: '500', margin: '0 0 20px 0', borderBottom: '1px solid #e5dec9', paddingBottom: '10px' }}>
-                            1. Datos del Socio / Lector
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <div style={{ gridColumn: 'span 2' }}>
-                                <label style={labelStyle}>Nombre Completo</label>
-                                <input type="text" name="nombre" required value={formData.nombre} onChange={handleChange} style={inputStyle} placeholder="Jorge Luis Borges" />
-                            </div>
-                            <div style={{ gridColumn: 'span 2' }}>
-                                <label style={labelStyle}>Correo Electrónico de Notificación</label>
-                                <input type="email" name="email" required value={formData.email} onChange={handleChange} style={inputStyle} placeholder="lector@biblioteca.com" />
-                            </div>
+            {/* CUERPO PRINCIPAL */}
+            <div style={{ maxWidth: '1200px', margin: '50px auto 0 auto', padding: '0 5%' }}>
+                {solicitudEnviada ? (
+                    <div style={{
+                        backgroundColor: '#f5f0e6',
+                        border: '1px solid #d4cebd',
+                        borderLeft: '4px solid #2c1810',
+                        padding: '40px',
+                        maxWidth: '680px',
+                        margin: '0 auto'
+                    }}>
+                        <span style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#5c3a21', fontWeight: '700', fontFamily: 'system-ui, sans-serif', display: 'block', marginBottom: '8px' }}>
+                            REGISTRO DE SOLICITUD · REF. {codigoReferencia}
+                        </span>
+                        <h2 style={{ fontSize: '2rem', fontWeight: '400', margin: '0 0 16px 0', color: '#1a1917' }}>
+                            Solicitud remitida a Secretaría de Archivo
+                        </h2>
+                        <p style={{ fontFamily: 'system-ui, sans-serif', fontSize: '0.95rem', color: '#443f38', lineHeight: '1.65', marginBottom: '26px' }}>
+                            Su solicitud de Pase Lector ha sido recibida y derivada para su evaluación y alta en el padrón de socios. Nos pondremos en contacto a través del correo electrónico registrado.
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/catalogo')}
+                                style={primaryBtnStyle}
+                            >
+                                Explorar Catálogo
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSolicitudEnviada(false);
+                                    setCodigoReferencia('');
+                                }}
+                                style={secondaryBtnStyle}
+                            >
+                                Completar Otra Solicitud
+                            </button>
                         </div>
-                    </section>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(320px, 390px)', gap: '45px', alignItems: 'start' }}>
+                        
+                        {/* FORMULARIO DE MEMBRESÍA / PASE LECTOR */}
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
+                            
+                            {error && (
+                                <div style={{
+                                    backgroundColor: '#fde8ec',
+                                    color: '#a93226',
+                                    border: '1px solid #e6b8c0',
+                                    padding: '14px 18px',
+                                    borderRadius: '2px',
+                                    fontSize: '0.88rem',
+                                    fontFamily: 'system-ui, sans-serif'
+                                }}>
+                                    {error}
+                                </div>
+                            )}
 
-                    <section style={{ backgroundColor: '#efebe0', padding: '25px', borderRadius: '4px' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: '500', margin: '0 0 20px 0', borderBottom: '1px solid #e5dec9', paddingBottom: '10px' }}>
-                            2. Domicilio de Entrega / Retiro
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <div style={{ gridColumn: 'span 2' }}>
-                                <label style={labelStyle}>Calle y Número</label>
-                                <input type="text" name="direccion" required value={formData.direccion} onChange={handleChange} style={inputStyle} placeholder="Calle Florida 123" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Ciudad / Localidad</label>
-                                <input type="text" name="ciudad" required value={formData.ciudad} onChange={handleChange} style={inputStyle} placeholder="CABA" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Código Postal</label>
-                                <input type="text" name="codigoPostal" required value={formData.codigoPostal} onChange={handleChange} style={inputStyle} placeholder="1005" />
-                            </div>
-                        </div>
-                    </section>
-
-                    <section style={{ backgroundColor: '#efebe0', padding: '25px', borderRadius: '4px' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: '500', margin: '0 0 20px 0', borderBottom: '1px solid #e5dec9', paddingBottom: '10px' }}>
-                            3. Modalidad de Préstamo
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', cursor: 'pointer' }}>
-                                <input type="radio" name="metodoRetiro" value="envio" checked={formData.metodoRetiro === 'envio'} onChange={handleChange} />
-                                Envío a domicilio del ejemplar
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', cursor: 'pointer' }}>
-                                <input type="radio" name="metodoRetiro" value="presencial" checked={formData.metodoRetiro === 'presencial'} onChange={handleChange} />
-                                Retiro presencial en Sala de Lectura (Sin costo de traslado)
-                            </label>
-                        </div>
-                    </section>
-
-                    <button 
-                        type="submit" 
-                        disabled={procesando}
-                        style={{
-                            backgroundColor: '#5c3a21',
-                            color: '#fcfaf2',
-                            border: 'none',
-                            padding: '16px',
-                            borderRadius: '30px',
-                            fontSize: '0.95rem',
-                            fontWeight: '600',
-                            letterSpacing: '0.05em',
-                            textTransform: 'uppercase',
-                            cursor: procesando ? 'wait' : 'pointer',
-                            transition: 'background-color 0.2s ease',
-                            marginTop: '10px'
-                        }}
-                    >
-                        {procesando ? 'Confirmando Reserva...' : `CONFIRMAR RESERVA DE EJEMPLARES`}
-                    </button>
-                </form>
-
-                {/* RESUMEN DE RESERVA MÚLTIPLE */}
-                <div style={{ backgroundColor: '#efebe0', padding: '25px', borderRadius: '4px', position: 'sticky', top: '20px' }}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: '500', margin: '0 0 20px 0', borderBottom: '1px solid #e5dec9', paddingBottom: '10px' }}>
-                        Resumen de la Solicitud ({itemsCheckout.length} {itemsCheckout.length === 1 ? 'obra' : 'obras'})
-                    </h3>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
-                        {itemsCheckout.map(({ libro, cantidad }) => {
-                            const urlImagen = libro.imagenUrl?.startsWith('http') 
-                                ? libro.imagenUrl 
-                                : `${BASE_URL_BACKEND}/uploads/${libro.imagenUrl}`;
-
-                            return (
-                                <div key={libro.id} style={{ display: 'flex', gap: '15px', paddingBottom: '15px', borderBottom: '1px solid #e5dec9', alignItems: 'center' }}>
-                                    <img 
-                                        src={urlImagen} 
-                                        alt={libro.titulo} 
-                                        style={{ width: '50px', height: '70px', objectFit: 'cover', borderRadius: '2px' }}
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                        <h4 style={{ margin: '0 0 3px 0', fontSize: '0.95rem', fontWeight: '500' }}>{libro.titulo}</h4>
-                                        <span style={{ fontSize: '0.8rem', color: '#70695d', display: 'block' }}>{libro.autor}</span>
-                                        <span style={{ fontSize: '0.8rem', color: '#70695d', display: 'block' }}>Cant: {cantidad} | ${Number(libro.precio || 0) * cantidad}</span>
+                            <section style={sectionCardStyle}>
+                                <h3 style={sectionTitleStyle}>
+                                    1. Datos Personales del Lector
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div style={{ gridColumn: 'span 2' }}>
+                                        <label style={labelStyle}>Nombre y Apellido</label>
+                                        <input
+                                            type="text"
+                                            name="nombreCompleto"
+                                            required
+                                            value={formData.nombreCompleto}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="Ej. Victoria Ocampo"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Correo Electrónico</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="lector@institucion.edu"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>DNI / Pasaporte</label>
+                                        <input
+                                            type="text"
+                                            name="documento"
+                                            required
+                                            value={formData.documento}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="Sin puntos"
+                                        />
+                                    </div>
+                                    <div style={{ gridColumn: 'span 2' }}>
+                                        <label style={labelStyle}>Teléfono de Contacto (Opcional)</label>
+                                        <input
+                                            type="tel"
+                                            name="telefono"
+                                            value={formData.telefono}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="Ej. +54 11 4567-8900"
+                                        />
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            </section>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.95rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Aranceles de Conservación</span>
-                            <span>$ {subtotalGeneral.toLocaleString('es-AR')}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Gestión de Envío Total</span>
-                            <span>$ {costoGestionTotal.toLocaleString('es-AR')}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.15rem', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #e5dec9' }}>
-                            <span>Total del Servicio</span>
-                            <span>$ {totalGeneral.toLocaleString('es-AR')}</span>
-                        </div>
-                    </div>
-                </div>
+                            <section style={sectionCardStyle}>
+                                <h3 style={sectionTitleStyle}>
+                                    2. Domicilio de Residencia
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div style={{ gridColumn: 'span 2' }}>
+                                        <label style={labelStyle}>Calle y Número</label>
+                                        <input
+                                            type="text"
+                                            name="direccion"
+                                            required
+                                            value={formData.direccion}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="Ej. Av. del Libertador 1600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Localidad / Ciudad</label>
+                                        <input
+                                            type="text"
+                                            name="ciudad"
+                                            required
+                                            value={formData.ciudad}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="San Isidro / CABA"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Código Postal</label>
+                                        <input
+                                            type="text"
+                                            name="codigoPostal"
+                                            required
+                                            value={formData.codigoPostal}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                            placeholder="1642"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
 
+                            <section style={sectionCardStyle}>
+                                <h3 style={sectionTitleStyle}>
+                                    3. Sede y Categoría de Membresía
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontFamily: 'system-ui, sans-serif' }}>
+                                    <div>
+                                        <label style={labelStyle}>Sede Principal</label>
+                                        <select
+                                            name="sedePreferida"
+                                            value={formData.sedePreferida}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                        >
+                                            <option value="Sede Central - Sala de Estudio">Sede Central - Sala de Estudio</option>
+                                            <option value="Sala Histórica - Filial Norte">Sala Histórica - Filial Norte</option>
+                                            <option value="Anexo Investigadores">Anexo Investigadores</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label style={labelStyle}>Categoría de Socio</label>
+                                        <select
+                                            name="categoriaLector"
+                                            value={formData.categoriaLector}
+                                            onChange={handleChange}
+                                            style={inputStyle}
+                                        >
+                                            <option value="Lector General">Lector General</option>
+                                            <option value="Estudiante / Docente">Estudiante / Docente</option>
+                                            <option value="Investigador de Archivo">Investigador de Archivo</option>
+                                        </select>
+                                    </div>
+
+                                    <div style={{ gridColumn: 'span 2', marginTop: '6px' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.88rem', color: '#443f38', cursor: 'pointer' }}>
+                                            <input
+                                                type="checkbox"
+                                                name="aceptaReglamento"
+                                                checked={formData.aceptaReglamento}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                            Acepto el reglamento de circulación y devolución de obras (plazo estándar de 14 días).
+                                        </label>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <button
+                                type="submit"
+                                disabled={enviando}
+                                style={primaryBtnStyle}
+                            >
+                                {enviando ? 'Enviando Solicitud...' : 'Solicitar Pase Lector →'}
+                            </button>
+                        </form>
+
+                        {/* FICHA LATERAL INFORMATIVA DEL PASE */}
+                        <aside style={{
+                            backgroundColor: '#f5f0e6',
+                            border: '1px solid #d4cebd',
+                            padding: '28px',
+                            borderRadius: '2px',
+                            position: 'sticky',
+                            top: '120px',
+                            fontFamily: 'system-ui, sans-serif'
+                        }}>
+                            <h3 style={{
+                                fontSize: '1.1rem',
+                                fontWeight: '600',
+                                color: '#2c1810',
+                                margin: '0 0 18px 0',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                borderBottom: '1px solid #e2ded7',
+                                paddingBottom: '12px',
+                                fontFamily: '"Playfair Display", Georgia, serif'
+                            }}>
+                                Alcance del Pase Lector
+                            </h3>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.88rem', color: '#443f38' }}>
+                                <div>
+                                    <span style={metaCaptionStyle}>Categoría Seleccionada</span>
+                                    <strong style={{ color: '#1a1917' }}>{formData.categoriaLector}</strong>
+                                </div>
+
+                                <div>
+                                    <span style={metaCaptionStyle}>Sede de Acreditación</span>
+                                    <strong style={{ color: '#1a1917' }}>{formData.sedePreferida}</strong>
+                                </div>
+
+                                <div style={{ borderTop: '1px solid #e2ded7', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px', color: '#544f46', lineHeight: '1.5' }}>
+                                    <span>• Préstamo domiciliario hasta 14 días renovables.</span>
+                                    <span>• Solicitud de consulta en salas de lectura y estudio.</span>
+                                    <span>• Cuaderno personal de lecturas y fichas críticas.</span>
+                                </div>
+                            </div>
+                        </aside>
+
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
+const sectionCardStyle = {
+    backgroundColor: '#f5f0e6',
+    border: '1px solid #e2ded7',
+    padding: '26px',
+    borderRadius: '2px'
+};
+
+const sectionTitleStyle = {
+    fontSize: '1.2rem',
+    fontWeight: '500',
+    color: '#2c1810',
+    margin: '0 0 20px 0',
+    borderBottom: '1px solid #e2ded7',
+    paddingBottom: '10px'
+};
+
 const labelStyle = {
     display: 'block',
-    fontSize: '0.8rem',
-    letterSpacing: '0.05em',
+    fontSize: '0.72rem',
+    fontWeight: '600',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
     color: '#70695d',
-    marginBottom: '5px'
+    marginBottom: '6px',
+    fontFamily: 'system-ui, sans-serif'
 };
 
 const inputStyle = {
     width: '100%',
     padding: '10px 12px',
-    borderRadius: '4px',
-    border: '1px solid #d4cebe',
-    backgroundColor: '#fcfaf2',
-    fontSize: '0.95rem',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box'
+    borderRadius: '2px',
+    border: '1px solid #d4cebd',
+    backgroundColor: '#ffffff',
+    fontSize: '0.9rem',
+    color: '#1a1917',
+    fontFamily: 'system-ui, sans-serif',
+    boxSizing: 'border-box',
+    outline: 'none'
 };
 
-export default Checkout;
+const metaCaptionStyle = {
+    fontSize: '0.7rem',
+    color: '#70695d',
+    textTransform: 'uppercase',
+    display: 'block',
+    letterSpacing: '0.06em',
+    marginBottom: '2px'
+};
+
+const primaryBtnStyle = {
+    backgroundColor: '#2c1810',
+    color: '#fcfaf2',
+    border: 'none',
+    padding: '14px 24px',
+    borderRadius: '2px',
+    fontSize: '0.82rem',
+    fontWeight: '600',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    fontFamily: 'system-ui, sans-serif'
+};
+
+const secondaryBtnStyle = {
+    backgroundColor: 'transparent',
+    color: '#2c1810',
+    border: '1px solid #2c1810',
+    padding: '14px 24px',
+    borderRadius: '2px',
+    fontSize: '0.82rem',
+    fontWeight: '600',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    fontFamily: 'system-ui, sans-serif'
+};
+
+export default PaseLector;
